@@ -18,10 +18,9 @@ from .tctg import TCTG
 
 
 class TCTGWindow(widgets.Window):
-    logo = img_to64("icons/ok.ico", height=22)
-    ok_ico = img_to64("icons/ok.ico")
+    logo = img_to64("icons/logo.ico", height=22)
+    ok_ico = img_to64("icons/logo.ico")
     error_ico = img_to64("icons/error.ico")
-    colors = dict(red="#FFA0A0", green="#80FF80", blue="#80FFFF")
 
     def __init__(self, app, config):
         self.app = app
@@ -36,9 +35,9 @@ class TCTGWindow(widgets.Window):
         )
         Events.tray_click = self.tray.key
 
-        self.out = widgets.MLineColors(
+        self.logs = widgets.MLineColors(
             font=(self.font, 8),
-            background_color="grey85",
+            background_color=config.UI.log,
             sbar_background_color=sg.theme_background_color(),
             sbar_arrow_color=sg.theme_button_color_background(),
             border_width=0,
@@ -56,7 +55,7 @@ class TCTGWindow(widgets.Window):
         self.left = widgets.AnimatedTxt(
             "",
             font=(self.font, 10),
-            colors=self.colors,
+            colors=vars(config.UI.infos),
             size=(20, None),
         )
         self.infos = widgets.MLineAutoSize(
@@ -66,7 +65,7 @@ class TCTGWindow(widgets.Window):
             background_color=sg.theme_background_color(),
             text_color=sg.theme_element_text_color(),
             pad=(5, 2),
-            colors=self.colors,
+            colors=vars(config.UI.infos),
         )
         b_logo = widgets.ButtonCooldown(
             "",
@@ -111,7 +110,7 @@ class TCTGWindow(widgets.Window):
             [
                 [
                     self.infos,
-                    sg.Col([menu, [self.out]], expand_y=True),
+                    sg.Col([menu, [self.logs]], expand_y=True),
                 ]
             ],
             event_to_action=event_to_action,
@@ -131,7 +130,7 @@ class TCTGWindow(widgets.Window):
 
     def log(self, txts):
         print(*txts, sep="")
-        self.out.print(*txts)
+        self.logs.print(*txts)
 
     def show_infos(self, txts):
         self.tray.set_tooltip("".join(txts)[:128])

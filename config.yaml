@@ -32,3 +32,8 @@ UI:
   font: Roboto
   up_arrow: ▲
   down_arrow: ▼
+  log: grey85
+  infos:
+    red: "#FF8080"
+    green: "#80FF80"
+    blue: "#80FFFF"

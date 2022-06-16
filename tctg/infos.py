@@ -12,14 +12,14 @@ from tools.style import Style
 
 from .bonus import Bonuses
 
+interline = Style("\n").smaller(4)
+row = lambda *args: (*args, "\n")
 h0 = Style().bold.bigger(7)
 h1 = Style().bold.bigger(3)
 h2 = Style().bold.bigger()
 h3 = Style
 h4 = Style().smaller()
 h5 = Style().smaller(2)
-EOL = "\n"
-SEP = Style("\n").smaller(4)
 
 
 @dataclass
@@ -129,62 +129,45 @@ class InfosHandler:
         connected_prefix = "" if infos.connected else "Pas "
         day, hour = day_hour(infos.date)
         return (
-            h0(config.title).blue,
-            EOL,
-            # NEW ROW
-            h2(day).blue,
-            h4(" à ").blue,
-            h2(hour).blue,
-            EOL,
-            # NEW ROW
-            h3(f"{connected_prefix}Connecté").warn(not infos.connected),
-            EOL,
-            SEP,
-            # BLANK LINE + NEW ROW
-            h1("Bonus ").blue,
-            *number(h1(infos.bonus).green),
-            EOL,
-            # NEW ROW
-            h3(infos.click_days).blue,
-            h5(f" {plural('jour', infos.click_days)},  "),
-            h2(infos.consecutive_days).blue,
-            h5(" de suite"),
-            EOL,
-            # NEW ROW
-            *number(h3(infos.dbonus).blue),
-            h5(" pts/jour"),
-            EOL,
-            SEP,
-            # BLANK LINE + NEW ROW
-            h1("Ratio ").blue,
-            *number(h1(ratio_txt).warn(infos.ratio <= 1)),
-            EOL,
-            # NEW ROW
-            h2(config.UI.up_arrow).green,
-            *number(h2(infos.ul[0]).green),
-            h5(f" {infos.ul[1]}  "),
-            h2(config.UI.up_arrow).warn(infos.seeding == 0),
-            h2(infos.seeding).warn(infos.seeding == 0),
-            h5(f" {plural('seed', infos.seeding)}"),
-            EOL,
-            # NEW ROW
-            h2(config.UI.down_arrow).red,
-            *number(h2(infos.dl[0]).red),
-            h5(f" {infos.dl[1]}"),
-            EOL,
-            SEP,
-            # BLANK LINE + NEW ROW
-            h1("Cadeau").blue,
-            h4(" à ").blue,
-            *number(h1(config.reward).green),
-            EOL,
-            # NEW ROW
-            h5("~"),
-            *number(h3(round(infos.speed + infos.dbonus)).blue),
-            h5(" pts/jour"),
-            EOL,
-            # NEW ROW
-            h5("dans "),
-            h2(infos.reward_in_days).blue,
-            h5(f" {plural('jour', infos.reward_in_days)}"),
-        )
+            *row(h0(config.title).blue),
+            *row(h2(day).blue, h4(" à ").blue, h2(hour).blue),
+            *row(h3(f"{connected_prefix}Connecté").warn(not infos.connected)),
+            interline,
+            *row(h1("Bonus ").blue, *number(h1(infos.bonus).green)),
+            *row(
+                h3(infos.click_days).blue,
+                h5(f" {plural('jour', infos.click_days)},  "),
+                h2(infos.consecutive_days).blue,
+                h5(" de suite"),
+            ),
+            *row(*number(h3(infos.dbonus).blue), h5(" pts/jour")),
+            interline,
+            *row(h1("Ratio ").blue, *number(h1(ratio_txt).warn(infos.ratio <= 1))),
+            *row(
+                h2(config.UI.up_arrow).green,
+                *number(h2(infos.ul[0]).green),
+                h5(f" {infos.ul[1]}  "),
+                h2(config.UI.up_arrow).warn(infos.seeding == 0),
+                h2(infos.seeding).warn(infos.seeding == 0),
+                h5(f" {plural('seed', infos.seeding)}"),
+            ),
+            *row(
+                h2(config.UI.down_arrow).red,
+                *number(h2(infos.dl[0]).red),
+                h5(f" {infos.dl[1]}"),
+            ),
+            interline,
+            *row(h1("Cadeau").blue, h4(" à ").blue, *number(h1(config.reward).green)),
+            *row(
+                h5("~"),
+                *number(h3(round(infos.speed + infos.dbonus)).blue),
+                h5(" pts/jour"),
+            ),
+            *row(
+                h5("dans "),
+                h2(infos.reward_in_days).blue,
+                h5(f" {plural('jour', infos.reward_in_days)}"),
+            ),
+        )[
+            :-2
+        ]  # remove last "\n"

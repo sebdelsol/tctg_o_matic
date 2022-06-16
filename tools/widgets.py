@@ -120,15 +120,16 @@ class ButtonCooldown(ButtonMouseOver):
 def _text_font_color(element, txt):
     if isinstance(txt, Style):
         font, color = txt.font_color(element.Font)
-        try:
-            if color:
-                if color == "transparent":
-                    color = element.BackgroundColor
+        if color:
+            if color == "transparent":
+                color = element.BackgroundColor
+            try:
                 element.widget.winfo_rgb(color)
-        except tkinter.TclError as err:
-            msg = f"Style({txt=}, {font=}, {color=}) bad color"
-            raise AttributeError(msg) from err
+            except tkinter.TclError as err:
+                msg = f"Style({txt=}, {font=}, {color=}) bad color"
+                raise AttributeError(msg) from err
         return font, color
+
     return element.Font, None
 
 
@@ -185,6 +186,7 @@ class MLineAutoSize(sg.Frame):
             wfont = tkinter.font.Font(self.ParentForm.TKroot, font)
             w_line += wfont.measure(txt)
             h_line = max(h_line, wfont.metrics("linespace"))
+
         return w_line, h_line
 
     def _resize(self, width, height):
@@ -203,16 +205,23 @@ class MLineAutoSize(sg.Frame):
             if txt[0] == "\n" or len(txt) > 1:
                 yield row
                 row = txt[1:]
+
         if row:
             yield row
 
     def update(self, *txts):
         self.mline("")
+
+        row = None
         width, height = 0, 0
         for row in self._get_rows(txts):
             w_line, h_line = self._print_row(row)
             width = max(width, w_line)
             height += h_line
+
+        if row and row[-1] == "\n":
+            height += h_line
+
         self._resize(width, height)
 
 
@@ -230,9 +239,9 @@ class TextColor(sg.T):
 
 
 class AnimatedTxt(TextColor):
-    animation = ["•" * i for i in range(6)]
-
-    def __init__(self, *args, dt=250, **kwargs):
+    def __init__(self, *args, dt=125, pattern="••", length=6, **kwargs):
+        self.pattern = pattern
+        self.length = length
         self._dt = dt
         self._index = 0
         self._animated = False
@@ -240,18 +249,18 @@ class AnimatedTxt(TextColor):
 
     def update(self, *args, animated=False, **kwargs):
         super().update(*args, **kwargs)
-        if animated and not self._animated:
-            self._index = -1
-            self._animated = True
-            self._animate(args[0], **kwargs)
-        else:
+        if animated != self._animated:
+            self._index = 0
             self._animated = animated
+            self._animate(args[0], **kwargs)
 
     def _get_anim(self):
+        i = self._index % (self.length * 2)
+        i = i if i <= self.length else (self.length * 2 - i)
         self._index += 1
-        return self.animation[self._index % len(self.animation)]
+        return " " * i + self.pattern
 
     def _animate(self, txt, **kwargs):
         if self._animated:
-            self.update(txt + self._get_anim(), animated=True, **kwargs)
+            super().update(txt + self._get_anim(), **kwargs)
             self.ParentForm.TKroot.after(self._dt, lambda: self._animate(txt, **kwargs))

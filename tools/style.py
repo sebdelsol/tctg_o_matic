@@ -8,8 +8,7 @@ class Style(str):
 
     def __call__(self, txt):
         """copy style of self"""
-        if not isinstance(txt, Style):
-            txt = Style(txt)
+        txt = Style(txt)
         txt._styles = self._styles.copy()
         txt._color = self._color
         txt._dsize = self._dsize
@@ -25,8 +24,8 @@ class Style(str):
 
     def __getattribute__(self, name):
         attr = super().__getattribute__(name)
+        # is it a str method ?
         if name in dir(str):
-            # is it a str method ?
 
             def method(*args, **kwargs):
                 """keep str methods returned values self style"""
@@ -38,6 +37,7 @@ class Style(str):
                 return value
 
             return method
+
         return attr
 
     def bigger(self, delta=1):
