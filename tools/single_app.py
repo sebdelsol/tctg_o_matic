@@ -6,7 +6,6 @@ import win32event
 import winerror
 
 
-# pylint: disable=c-extension-no-member
 def _create_event(name):
     """auto reset event"""
     if event := win32event.CreateEvent(None, False, False, name):
@@ -30,8 +29,10 @@ class SingleApp:
 
     def __init__(self, title):
         self.title = title
+        self.event = None
+        self.mutex = None
+        self.mutex_error = None
 
-    # pylint: disable=attribute-defined-outside-init
     def __enter__(self):
         self.event = _create_event(self.title)
         self.mutex = _create_mutex(self.title)
