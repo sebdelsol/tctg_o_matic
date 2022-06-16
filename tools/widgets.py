@@ -180,14 +180,14 @@ class MLineAutoSize(sg.Frame):
         )
 
     def _print_row(self, row):
-        w_line, h_line = 0, 0
+        w_row, h_row = 0, 0
         for txt in row:
             font = self.mline.print_style(txt, end="")
             wfont = tkinter.font.Font(self.ParentForm.TKroot, font)
-            w_line += wfont.measure(txt)
-            h_line = max(h_line, wfont.metrics("linespace"))
+            w_row += wfont.measure(txt)
+            h_row = max(h_row, wfont.metrics("linespace"))
 
-        return w_line, h_line
+        return w_row, h_row
 
     def _resize(self, width, height):
         pad = self.mline.Pad or self.mline.ParentForm.ElementPadding
@@ -215,12 +215,12 @@ class MLineAutoSize(sg.Frame):
         row = None
         width, height = 0, 0
         for row in self._get_rows(txts):
-            w_line, h_line = self._print_row(row)
-            width = max(width, w_line)
-            height += h_line
+            w_row, h_row = self._print_row(row)
+            width = max(width, w_row)
+            height += h_row
 
         if row and row[-1] == "\n":
-            height += h_line
+            height += h_row
 
         self._resize(width, height)
 
