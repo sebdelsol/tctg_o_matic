@@ -119,7 +119,7 @@ class ButtonCooldown(ButtonMouseOver):
 
 def _from_style(element, txt):
     if isinstance(txt, Style):
-        font, color = txt.font_color(element.Font)
+        font, color = txt.get(element.Font)
         if color:
             if color == "transparent":
                 color = element.BackgroundColor

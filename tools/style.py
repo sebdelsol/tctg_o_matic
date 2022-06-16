@@ -61,7 +61,7 @@ class Style(str):
         self._color = color
         return self
 
-    def font_color(self, font):
+    def get(self, font):
         font, size = font
         font += f" {size + self._dsize}"
         for style, enabled in self._styles.items():
