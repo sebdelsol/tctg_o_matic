@@ -156,8 +156,7 @@ class InfosHandler:
                 h2(config.UI.up_arrow).green,
                 *number(h2(infos.ul[0]).green),
                 h5(f" {infos.ul[1]}  "),
-                h2(config.UI.up_arrow).warn(infos.seeding == 0),
-                h2(infos.seeding).warn(infos.seeding == 0),
+                h2(f"{config.UI.up_arrow}{infos.seeding}").warn(infos.seeding == 0),
                 h5(f" {plural('seed', infos.seeding)}"),
             ),
             *row(
