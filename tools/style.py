@@ -62,10 +62,9 @@ class Style(str):
         return self
 
     def font_color(self, font):
-        name, size = font
-        size += self._dsize
-        name += f" {size}"
-        for style, used in self._styles.items():
-            if used:  # keep styles in order
-                name += f" {style}"
-        return name, self._color
+        font, size = font
+        font += f" {size + self._dsize}"
+        for style, enabled in self._styles.items():
+            if enabled:
+                font += f" {style}"
+        return font, self._color
