@@ -61,9 +61,6 @@ class Style(str):
         self._color = color
         return self
 
-    def get_color(self):
-        return self._color
-
     def font_color(self, font):
         name, size = font
         size += self._dsize
@@ -71,4 +68,4 @@ class Style(str):
         for style, used in self._styles.items():
             if used:  # keep styles in order
                 name += f" {style}"
-        return name, self.get_color()
+        return name, self._color
