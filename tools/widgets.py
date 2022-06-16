@@ -117,7 +117,7 @@ class ButtonCooldown(ButtonMouseOver):
         self.ParentForm.TKroot.after(self.cooldown, lambda: self.update(disabled=False))
 
 
-def _text_font_color(element, txt):
+def _from_style(element, txt):
     if isinstance(txt, Style):
         font, color = txt.font_color(element.Font)
         if color:
@@ -139,7 +139,7 @@ class MLineColors(sg.MLine):
         super().__init__(*args, **kwargs)
 
     def print_style(self, txt="", end="\n"):
-        font, color = _text_font_color(self, txt)
+        font, color = _from_style(self, txt)
         super().print(txt, font=font, t=self.colors.get(color, color), end=end)
         return font
 
@@ -231,7 +231,7 @@ class TextColor(sg.T):
         super().__init__(*args, **kwargs)
 
     def update(self, *args, **kwargs):
-        font, color = _text_font_color(self, args[0])
+        font, color = _from_style(self, args[0])
         color = self.colors.get(color, color)
         kwargs["text_color"] = color or kwargs.get("text_color")
         kwargs["font"] = font

@@ -125,13 +125,15 @@ class InfosHandler:
     def get(self):
         infos = self.infos
         config = self.config
-        ratio_txt = "∞" if infos.ratio == float("inf") else round(infos.ratio, 2)
-        connected_prefix = "" if infos.connected else "Pas "
         day, hour = day_hour(infos.date)
         return (
             *row(h0(config.title).blue),
             *row(h2(day).blue, h4(" à ").blue, h2(hour).blue),
-            *row(h3(f"{connected_prefix}Connecté").warn(not infos.connected)),
+            *row(
+                h3(f"{'' if infos.connected else 'Pas '}Connecté").warn(
+                    not infos.connected
+                )
+            ),
             interline,
             *row(h1("Bonus ").blue, *number(h1(infos.bonus).green)),
             *row(
@@ -142,7 +144,14 @@ class InfosHandler:
             ),
             *row(*number(h3(infos.dbonus).blue), h5(" pts/jour")),
             interline,
-            *row(h1("Ratio ").blue, *number(h1(ratio_txt).warn(infos.ratio <= 1))),
+            *row(
+                h1("Ratio ").blue,
+                *number(
+                    h1(
+                        "∞" if infos.ratio == float("inf") else round(infos.ratio, 2)
+                    ).warn(infos.ratio <= 1)
+                ),
+            ),
             *row(
                 h2(config.UI.up_arrow).green,
                 *number(h2(infos.ul[0]).green),
@@ -169,4 +178,4 @@ class InfosHandler:
                 h5(f" {plural('jour', infos.reward_in_days)}"),
             ),
         )[:-1]
-        # remove last "\n"
+        # remove the last "\n" from row()
