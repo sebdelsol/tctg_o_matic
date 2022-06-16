@@ -1,0 +1,34 @@
+!Config
+title: TCTG o Matic
+domain: tctg.pm
+infos_file: infos.yaml
+update_at_start: true
+get_bonus_rules: true
+reward: 25000
+bonus:
+  max: 1000
+  added_per_day: 5
+  consecutive_days:
+    # [days, bonus]
+    - [10, 250]
+    - [20, 500]
+    - [30, 1000]
+everyday:
+  # [at hour, + jitter minutes]
+  - ["00:00", 60]
+  - ["11:00", 120]
+retry:
+  hours: 2
+  jitter_percent: 25
+bonuses:
+  compress_less_than_hours: 1
+  compute_speed_min_hours: 2
+  crop_older_than_days: 2
+timeouts:
+  page_load: 30
+  wait_elt: 10
+UI:
+  logo_height: 200
+  font: Roboto
+  up_arrow: ▲
+  down_arrow: ▼
