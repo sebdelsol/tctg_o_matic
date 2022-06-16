@@ -168,6 +168,5 @@ class InfosHandler:
                 h2(infos.reward_in_days).blue,
                 h5(f" {plural('jour', infos.reward_in_days)}"),
             ),
-        )[
-            :-2
-        ]  # remove last "\n"
+        )[:-2]
+        # remove last "\n"
