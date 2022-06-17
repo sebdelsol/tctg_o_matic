@@ -18,6 +18,7 @@ class Window(sg.Window):
     )
 
     def __init__(self, title, layout, event_to_action=None, **kwargs):
+        self.running = True
         self.event_to_action = event_to_action or {}
         args = title, [[sg.Frame("", layout, **Window._frame_kwargs)]]
         kwargs.update(Window._kwargs)
@@ -31,11 +32,16 @@ class Window(sg.Window):
             if hasattr(elt, "finalize"):
                 elt.finalize()
 
-    def loop(self, timeout=None, timeout_key=sg.TIMEOUT_EVENT):
+    def write_event_value(self, key, value):
+        if self.running:
+            super().write_event_value(key, value)
+
+    def loop(self):
         while True:
-            event, values = self.read(timeout, timeout_key)
+            event, values = self.read()
             if action := self.event_to_action.get(event):
                 if action(values.get(event)):
+                    self.running = False
                     return event
 
 
@@ -60,8 +66,8 @@ class YesNoWindow(Window):
         )
         self.yes = yes
 
-    def loop(self, timeout=None, timeout_key=sg.TIMEOUT_EVENT):
-        yes = super().loop(timeout, timeout_key) == self.yes
+    def loop(self):
+        yes = super().loop() == self.yes
         self.close()
         return yes
 

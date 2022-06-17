@@ -23,7 +23,6 @@ class TCTGWindow(widgets.Window):
     error_ico = img_to64("icons/error.ico")
 
     def __init__(self, app, config):
-        self.app = app
         self.config = config
         self.font = config.UI.font
 
@@ -93,10 +92,10 @@ class TCTGWindow(widgets.Window):
             Events.tray_click: lambda _: self.UnHide() if self._Hidden else self.Hide(),
             Events.enable_update: lambda enabled: self.b_update(disabled=not enabled),
             Events.updating: lambda txt: self.left(txt, animated=True),
-            Events.timeout: lambda _: self.check_another_started(),
             Events.logo: lambda _: self.tctg.open_in_browser(),
             Events.update: lambda _: self.tctg.force_update(),
             Events.close: lambda _: self.ask_close(),
+            Events.unhide: lambda _: self.UnHide(),
             Events.minimize: lambda _: self.Hide(),
             Events.show_infos: self.show_infos,
             Events.set_error: self.set_error,
@@ -117,11 +116,9 @@ class TCTGWindow(widgets.Window):
             element_padding=(2, 2),
             alpha_channel=0,
         )
+        unhide = lambda: self.write_event_value(Events.unhide, None)
+        app.set_callback_another_launched(unhide)
         self.tctg = TCTG(config, self.write_event_value)
-
-    def check_another_started(self):
-        if self.app.has_tried_to_start():
-            self.UnHide()
 
     def set_error(self, error):
         self.tray.change_icon(self.error_ico if error else self.ok_ico)
@@ -150,8 +147,8 @@ class TCTGWindow(widgets.Window):
         self.UnHide()
         return False
 
-    def loop(self, timeout=100, timeout_key=Events.timeout):
-        super().loop(timeout, timeout_key)
+    def loop(self):
+        super().loop()
         print("Exiting...")
         self.tctg.stop()
         self.tray.close()

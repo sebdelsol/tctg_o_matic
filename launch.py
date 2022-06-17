@@ -5,7 +5,10 @@ if __name__ == "__main__":
     config = Loader("config.yaml").load()
 
     with SingleApp(config.title) as app:
-        if not app.is_running():
+        if app.already_running:
+            print(f"{config.title} already running")
+
+        else:
             from tools import img_to64
             from tools.widgets import Splash
 

@@ -9,8 +9,8 @@ _events = (
     "enable_update",
     "update",
     "minimize",
+    "unhide",
     "close",
-    "timeout",
     "logo",
 )
 

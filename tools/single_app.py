@@ -1,4 +1,5 @@
 import random
+import threading
 from uuid import UUID
 
 import win32api
@@ -28,29 +29,33 @@ class SingleApp:
     """
 
     def __init__(self, title):
-        self.title = title
-        self.event = None
-        self.mutex = None
-        self.mutex_error = None
+        self.event = _create_event(title)
+        self.mutex = _create_mutex(title)
+        self.already_running = win32api.GetLastError() == winerror.ERROR_ALREADY_EXISTS
+
+        self.callback = None
+        self.thread = threading.Thread(target=self._check_another_started)
+        self.thread.start()
 
     def __enter__(self):
-        self.event = _create_event(self.title)
-        self.mutex = _create_mutex(self.title)
-        self.mutex_error = win32api.GetLastError()
+        if self.already_running:
+            win32event.SetEvent(self.event)
         return self
 
-    def is_running(self):
-        if self.mutex_error == winerror.ERROR_ALREADY_EXISTS:
-            print(f"{self.title} already running")
-            # signal it has tried to start
-            win32event.SetEvent(self.event)
-            return True
-        return False
+    def set_callback_another_launched(self, callback):
+        self.callback = callback
 
-    def has_tried_to_start(self):
-        return win32event.WaitForSingleObject(self.event, 0) == win32event.WAIT_OBJECT_0
+    def _check_another_started(self):
+        while not self.already_running:
+            win32event.WaitForSingleObject(self.event, win32event.INFINITE)
+            if self.callback:
+                self.callback()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self.already_running = True
+        win32event.SetEvent(self.event)
+        self.thread.join()
+
         for handle in (self.event, self.mutex):
             if handle:
                 win32api.CloseHandle(handle)

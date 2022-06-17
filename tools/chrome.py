@@ -117,5 +117,5 @@ class EnhancedChrome(uc.Chrome):
                 f.write(error_log)
 
         # pylint: disable=broad-except
-        except Exception:
-            print("can't save error page")
+        except Exception as err:
+            print(f"can't save error page : {err}")

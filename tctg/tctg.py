@@ -26,9 +26,8 @@ class TCTG:
 
     def __init__(self, config, event_callback):
         self.config = config
-        self.event_callback = event_callback
+        self.event = event_callback
         self.url = f"https://{self.config.domain}"
-        self.running = True
         self.error = False
         self.infos = InfosHandler(config)
         self.show_infos()
@@ -48,15 +47,10 @@ class TCTG:
         schedule.start(right_now=config.update_at_start)
 
     def stop(self):
-        self.running = False
         self.schedule.stop()
 
     def force_update(self):
         self.schedule.force_update()
-
-    def event(self, event, value):
-        if self.running:
-            self.event_callback(event, value)
 
     def log(self, *txts, main=False):
         prompt = Style("\n").smaller(5) if main else " •"
