@@ -1,8 +1,7 @@
-import traceback
 import webbrowser
 from datetime import datetime
 
-from tools import day_hour, err_file_line, loc_seconds_left
+from tools import day_hour, loc_seconds_left
 from tools.chrome import EnhancedChrome
 from tools.schedule import Duration, Schedule
 from tools.style import Style
@@ -32,6 +31,12 @@ class TCTG:
         self.infos = InfosHandler(config)
         self.show_infos()
 
+        self.chrome_kw = dict(
+            page_load_timeout=self.config.timeouts.page_load,
+            wait_elt_timeout=self.config.timeouts.wait_elt,
+            log=self.log,
+        )
+
         logs = dict(update=self.log_update, next=self.log_next, left=self.log_left)
         schedule = self.schedule = Schedule(self._update, **logs)
 
@@ -56,10 +61,11 @@ class TCTG:
         prompt = Style("\n").smaller(5) if main else " •"
         self.event(Events.log, (prompt, " ", *txts))
 
-    def log_error(self):
-        err, file, line = err_file_line()
-        file_line = " dans ", h0(file).red, " ligne ", h0(line).red
-        self.log(h0(err).underline.red, *file_line)
+    def handle_error(self, err):
+        self.error = err
+        if err:
+            file_line = " dans ", h0(err.file).red, " ligne ", h0(err.line).red
+            self.log(h0(err.name).underline.red, *file_line)
 
     @staticmethod
     def get_date_txts(date):
@@ -91,14 +97,8 @@ class TCTG:
     def _update(self):
         self.event(Events.enable_update, False)
         self.event(Events.updating, h1("en cours").italic.white)
-        self.error = False
 
-        try:
-            driver = EnhancedChrome(
-                page_load_timeout=self.config.timeouts.page_load,
-                wait_elt_timeout=self.config.timeouts.wait_elt,
-                log=self.log,
-            )
+        with EnhancedChrome(**self.chrome_kw) as driver:
             driver.load_cookies(self.url)
             goto_page = lambda page: driver.get(f"{self.url}/{page}")
 
@@ -132,15 +132,8 @@ class TCTG:
 
             self.show_infos()
 
-        # pylint: disable=broad-except
-        except Exception:
-            self.error = True
-            self.log_error()
-            driver.save_error(traceback.format_exc(), datetime.now())
-
-        finally:
-            driver.quit()
-            self.event(Events.enable_update, True)
+        self.handle_error(driver.error)
+        self.event(Events.enable_update, True)
 
         # notify error and schedule a retry if needed
         self.event(Events.set_error, self.error)

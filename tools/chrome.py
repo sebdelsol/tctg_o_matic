@@ -1,5 +1,8 @@
 import os
 import shutil
+import traceback
+from datetime import datetime
+from types import SimpleNamespace
 from urllib.parse import urlparse
 
 import browser_cookie3
@@ -30,23 +33,24 @@ def _find(find_func, xpath):
 class EnhancedChrome(uc.Chrome):
     # faster load without images
     prefs = {"profile.managed_default_content_settings.images": 2}
-    profile = "profile"
-    error = "error"
+    profile_folder = "profile"
+    error_folder = "error"
 
     def __init__(self, page_load_timeout=10, wait_elt_timeout=5, log=None):
         options = uc.ChromeOptions()
         options.headless = True
         options.add_experimental_option("prefs", self.prefs)
         # pylint: disable=unnecessary-lambda
+        self.error = None
         self.log = log or (lambda *args: print(*args))
 
         # profile to keep the caches & cookies
-        os.makedirs(self.profile, exist_ok=True)
+        os.makedirs(self.profile_folder, exist_ok=True)
 
         super().__init__(
             options=options,
             version_main=_get_chrome_main_version(),
-            user_data_dir=os.path.abspath(self.profile),
+            user_data_dir=os.path.abspath(self.profile_folder),
         )
 
         self.set_page_load_timeout(page_load_timeout)
@@ -55,7 +59,7 @@ class EnhancedChrome(uc.Chrome):
 
     def find_local_cookies(self, domain):
         for cookie_file in ("Default\\Cookies", "Default\\Network\\Cookies"):
-            cookie_file = os.path.join(self.profile, cookie_file)
+            cookie_file = os.path.join(self.profile_folder, cookie_file)
             if os.path.exists(cookie_file):
                 return browser_cookie3.chrome(
                     domain_name=domain, cookie_file=cookie_file
@@ -97,18 +101,30 @@ class EnhancedChrome(uc.Chrome):
     def xpaths(self, xpath):
         return _find(self.find_elements, xpath)
 
-    def save_error(self, error_log, error_date):
+    # fix UC contextual manager
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type:
+            self.error = SimpleNamespace(
+                name=exc_type.__name__,
+                file=os.path.split(exc_tb.tb_frame.f_code.co_filename)[1],
+                line=exc_tb.tb_lineno,
+            )
+            self._save_error(traceback.format_exc(), datetime.now())
+        self.quit()
+        return True
+
+    def _save_error(self, error_log, error_date):
         # remove all previous errors folders
-        if os.path.exists(self.error):
-            for filename in os.listdir(self.error):
-                file_path = os.path.join(self.error, filename)
+        if os.path.exists(self.error_folder):
+            for filename in os.listdir(self.error_folder):
+                file_path = os.path.join(self.error_folder, filename)
                 if os.path.isdir(file_path):
                     shutil.rmtree(file_path)
 
         # write the errors files
-        folder = os.path.join(self.error, f"{error_date:%Y_%m_%d_at_%H_%M_%S}")
+        folder = os.path.join(self.error_folder, f"{error_date:%Y_%m_%d_at_%H_%M_%S}")
         os.makedirs(folder, exist_ok=True)
-        filename = os.path.join(folder, self.error)
+        filename = os.path.join(folder, self.error_folder)
         try:
             with open(f"{filename}.html", "w", encoding="utf8") as f:
                 f.write(self.page_source)

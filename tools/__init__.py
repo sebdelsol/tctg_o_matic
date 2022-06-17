@@ -23,12 +23,6 @@ def day_hour(date):
     return f"{date:%d/%m/%y}", f"{date:%Hh%M:%S}"
 
 
-def err_file_line():
-    exc_type, _, exc_tb = sys.exc_info()
-    filename = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    return exc_type.__name__, filename, exc_tb.tb_lineno
-
-
 def img_to64(path, height=None):
     im = Image.open(path)
     if height:
