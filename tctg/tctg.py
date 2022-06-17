@@ -63,9 +63,11 @@ class TCTG:
 
     def handle_error(self, err):
         self.error = err
+        self.event(Events.set_error, err)
         if err:
             file_line = " dans ", h0(err.file).red, " ligne ", h0(err.line).red
             self.log(h0(err.name).underline.red, *file_line)
+        return self.retry if err else None
 
     @staticmethod
     def get_date_txts(date):
@@ -132,9 +134,5 @@ class TCTG:
 
             self.show_infos()
 
-        self.handle_error(driver.error)
         self.event(Events.enable_update, True)
-
-        # notify error and schedule a retry if needed
-        self.event(Events.set_error, self.error)
-        return self.retry if self.error else None
+        return self.handle_error(driver.error)
