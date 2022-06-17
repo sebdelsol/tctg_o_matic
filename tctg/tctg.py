@@ -103,6 +103,7 @@ class TCTG:
             driver = EnhancedChrome(
                 page_load_timeout=self.config.timeouts.page_load,
                 wait_elt_timeout=self.config.timeouts.wait_elt,
+                log=self.log,
             )
             driver.load_cookies(self.url)
             goto_page = lambda page: driver.get(f"{self.url}/{page}")

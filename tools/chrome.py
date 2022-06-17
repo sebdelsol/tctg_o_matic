@@ -33,10 +33,11 @@ class EnhancedChrome(uc.Chrome):
     profile = "profile"
     error = "error"
 
-    def __init__(self, page_load_timeout=10, wait_elt_timeout=5):
+    def __init__(self, page_load_timeout=10, wait_elt_timeout=5, log=None):
         options = uc.ChromeOptions()
         options.headless = True
         options.add_experimental_option("prefs", self.prefs)
+        self.log = log or (lambda _: None)
 
         # profile to keep the caches & cookies
         os.makedirs(self.profile, exist_ok=True)
@@ -64,8 +65,8 @@ class EnhancedChrome(uc.Chrome):
         domain = urlparse(url).netloc
         # do those cookies already exist in the local profile ?
         if not self.find_local_cookies(domain):
-            print(" • Load cookies")
             # get those from the regular Chrome profile
+            self.log("Load cookies")
             self.get(url)
             for cookie in browser_cookie3.chrome(domain_name=domain):
                 self.add_cookie(
