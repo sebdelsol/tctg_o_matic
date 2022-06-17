@@ -94,11 +94,11 @@ class TCTGWindow(widgets.Window):
             Events.updating: lambda txt: self.left(txt, animated=True),
             Events.logo: lambda _: self.tctg.open_in_browser(),
             Events.update: lambda _: self.tctg.force_update(),
+            Events.set_tray_icon: self.set_tray_icon,
             Events.close: lambda _: self.ask_close(),
             Events.unhide: lambda _: self.UnHide(),
             Events.minimize: lambda _: self.Hide(),
             Events.show_infos: self.show_infos,
-            Events.set_error: self.set_error,
             Events.log_left: self.left,
             Events.log: self.log,
         }
@@ -120,7 +120,7 @@ class TCTGWindow(widgets.Window):
         app.set_callback_another_launched(unhide)
         self.tctg = TCTG(config, self.write_event_value)
 
-    def set_error(self, error):
+    def set_tray_icon(self, error):
         self.tray.change_icon(self.error_ico if error else self.ok_ico)
         if error:
             self.UnHide()

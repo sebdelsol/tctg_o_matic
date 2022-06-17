@@ -61,14 +61,6 @@ class TCTG:
         prompt = Style("\n").smaller(5) if main else " •"
         self.event(Events.log, (prompt, " ", *txts))
 
-    def handle_error(self, err):
-        self.error = err
-        self.event(Events.set_error, err)
-        if err:
-            file_line = " dans ", h0(err.file).red, " ligne ", h0(err.line).red
-            self.log(h0(err.name).underline.red, *file_line)
-        return self.retry if err else None
-
     @staticmethod
     def get_date_txts(date):
         day, hour = day_hour(date)
@@ -135,4 +127,17 @@ class TCTG:
             self.show_infos()
 
         self.event(Events.enable_update, True)
-        return self.handle_error(driver.error)
+
+        self.error = bool(driver.error)
+        self.event(Events.set_tray_icon, self.error)
+        if self.error:
+            self.log(
+                h0(driver.error.name).underline.red,
+                " dans ",
+                h0(driver.error.file).red,
+                " ligne ",
+                h0(driver.error.line).red,
+            )
+            # schedule a retry
+            return self.retry
+        return None

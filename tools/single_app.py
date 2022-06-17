@@ -31,28 +31,34 @@ class SingleApp:
     def __init__(self, title):
         self.event = _create_event(title)
         self.mutex = _create_mutex(title)
-        self.already_running = win32api.GetLastError() == winerror.ERROR_ALREADY_EXISTS
+        # run only if no other one already is
+        self.running = win32api.GetLastError() != winerror.ERROR_ALREADY_EXISTS
+        if not self.running:
+            # signal the running one
+            win32event.SetEvent(self.event)
 
         self.callback = None
         self.thread = threading.Thread(target=self._check_another_started)
         self.thread.start()
 
     def __enter__(self):
-        if self.already_running:
-            win32event.SetEvent(self.event)
         return self
+
+    @property
+    def already_running(self):
+        return not self.running
 
     def set_callback_another_launched(self, callback):
         self.callback = callback
 
     def _check_another_started(self):
-        while not self.already_running:
+        while self.running:
             win32event.WaitForSingleObject(self.event, win32event.INFINITE)
             if self.callback:
                 self.callback()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.already_running = True
+        self.running = False
         win32event.SetEvent(self.event)
         self.thread.join()
 
