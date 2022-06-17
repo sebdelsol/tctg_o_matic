@@ -147,6 +147,6 @@ class TCTG:
             driver.quit()
             self.event(Events.enable_update, True)
 
-        # notify error and sechedule a retry if needed
+        # notify error and schedule a retry if needed
         self.event(Events.set_error, self.error)
         return self.retry if self.error else None
