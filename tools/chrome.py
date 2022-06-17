@@ -37,7 +37,8 @@ class EnhancedChrome(uc.Chrome):
         options = uc.ChromeOptions()
         options.headless = True
         options.add_experimental_option("prefs", self.prefs)
-        self.log = log or (lambda _: None)
+        # pylint: disable=unnecessary-lambda
+        self.log = log or (lambda *args: print(*args))
 
         # profile to keep the caches & cookies
         os.makedirs(self.profile, exist_ok=True)
