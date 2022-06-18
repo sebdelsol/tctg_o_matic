@@ -79,8 +79,10 @@ class TCTG:
 
     def log_left(self, seconds):
         error_msg = " (ERREUR)" if self.error else ""
-        left = f"dans {loc_seconds_left(seconds)}{error_msg}"
-        self.event(Events.log_left, h1(left).italic.warn(self.error))
+        self.event(
+            Events.log_left,
+            h1(f"dans {loc_seconds_left(seconds)}{error_msg}").italic.warn(self.error),
+        )
 
     def show_infos(self):
         self.event(Events.show_infos, self.infos.get())
