@@ -23,8 +23,8 @@ class TCTGWindow(widgets.Window):
     error_ico = img_to64("icons/error.ico")
 
     def __init__(self, app, config):
-        self.config = config
-        self.font = config.UI.font
+        font = config.UI.font
+        font_bold = f"{font} bold"
 
         self.tray = SystemTray(
             ["", []],
@@ -35,7 +35,7 @@ class TCTGWindow(widgets.Window):
         Events.tray_click = self.tray.key
 
         self.logs = widgets.MLineColors(
-            font=(self.font, 8),
+            font=(font, 8),
             background_color=config.UI.log,
             sbar_background_color=sg.theme_background_color(),
             sbar_arrow_color=sg.theme_button_color_background(),
@@ -48,18 +48,18 @@ class TCTGWindow(widgets.Window):
         )
         self.b_update = widgets.ButtonMouseOver(
             "MàJ",
-            font=f"{self.font} 10 bold",
+            font=(font_bold, 10),
             k=Events.update,
         )
         self.left = widgets.AnimatedTxt(
             "",
-            font=(self.font, 10),
+            font=(font, 10),
             colors=vars(config.UI.infos),
             size=(20, None),
         )
         self.infos = widgets.MLineAutoSize(
             "",
-            font=(self.font, 9),
+            font=(font, 9),
             justification="center",
             background_color=sg.theme_background_color(),
             text_color=sg.theme_element_text_color(),
@@ -77,15 +77,21 @@ class TCTGWindow(widgets.Window):
         )
         b_quit = widgets.ButtonMouseOver(
             "Quitter",
-            font=f"{self.font} 10",
+            font=(font, 10),
             over_color="red",
             k=Events.close,
         )
         b_minimize = widgets.ButtonMouseOver(
             "_____",
             over_color="lime green",
-            font=f"{self.font} 12 bold",
+            font=(font_bold, 12),
             k=Events.minimize,
+        )
+        self.yes_no_kw = dict(
+            title=f"Quitter {config.title} ?",
+            yes=("oui", "red"),
+            no=("non", "lime green"),
+            font=(font_bold, 12),
         )
 
         event_to_action = {
@@ -116,8 +122,7 @@ class TCTGWindow(widgets.Window):
             element_padding=(2, 2),
             alpha_channel=0,
         )
-        unhide = lambda: self.write_event_value(Events.unhide, None)
-        app.set_callback_another_launched(unhide)
+        app.set_callback_another_launched(lambda: self.write_event_value(Events.unhide))
         self.tctg = TCTG(config, self.write_event_value)
 
     def set_tray_icon(self, error):
@@ -137,12 +142,7 @@ class TCTGWindow(widgets.Window):
 
     def ask_close(self):
         self.Hide()
-        if widgets.YesNoWindow(
-            f"Quitter {self.config.title} ?",
-            yes=("oui", "red"),
-            no=("non", "lime green"),
-            font=f"{self.font} 12 bold",
-        ).loop():
+        if widgets.YesNoWindow(**self.yes_no_kw).loop():
             return True
         self.UnHide()
         return False

@@ -32,7 +32,7 @@ class Window(sg.Window):
             if hasattr(elt, "finalize"):
                 elt.finalize()
 
-    def write_event_value(self, key, value):
+    def write_event_value(self, key, value=None):
         if self.running:
             super().write_event_value(key, value)
 
@@ -46,15 +46,15 @@ class Window(sg.Window):
 
 
 class YesNoWindow(Window):
-    def __init__(self, txt, yes=None, no=None, font="Any 12 bold"):
+    def __init__(self, title="", yes=None, no=None, font=None):
         yes, yes_color = yes or ("yes", None)
         no, no_color = no or ("no", None)
-        width = max(map(len, (yes, no))) * 4
+        width = max(len(yes), len(no)) * 4
         yes, no = f"{yes.capitalize():^{width//2}}", f"{no.capitalize():^{width}}"
         super().__init__(
             "",
             [
-                [sg.T(txt, font=font, expand_x=True, justification="center")],
+                [sg.T(title, font=font, expand_x=True, justification="center")],
                 [
                     ButtonMouseOver(no, over_color=no_color, font=font),
                     sg.P(),
