@@ -2,7 +2,7 @@ import webbrowser
 from datetime import datetime
 
 from tools import day_hour, loc_seconds_left
-from tools.chrome import EnhancedChrome
+from tools.chrome import Chrome
 from tools.schedule import Duration, Schedule
 from tools.style import Style
 
@@ -94,7 +94,7 @@ class TCTG:
         self.event(Events.enable_update, False)
         self.event(Events.updating, h1("en cours").italic.white)
 
-        with EnhancedChrome(**self.chrome_kw) as driver:
+        with Chrome(**self.chrome_kw) as driver:
             driver.load_cookies(self.url)
             goto_page = lambda page: driver.get(f"{self.url}/{page}")
 

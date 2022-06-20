@@ -31,7 +31,7 @@ class SingleApp:
     def __init__(self, title):
         self._event = _create_event(title)
         self._mutex = _create_mutex(title)
-        # run only if no other one already is
+        # run only if no other already is
         self.can_run = win32api.GetLastError() != winerror.ERROR_ALREADY_EXISTS
         if not self.can_run:
             print(f"\n{title} already running!!")

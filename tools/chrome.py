@@ -30,7 +30,7 @@ def _find(find_func, xpath):
     return find_func(*locator)
 
 
-class EnhancedChrome(uc.Chrome):
+class Chrome(uc.Chrome):
     # faster load without images
     prefs = {"profile.managed_default_content_settings.images": 2}
     profile_folder = "profile"
