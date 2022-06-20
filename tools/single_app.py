@@ -29,39 +29,35 @@ class SingleApp:
     """
 
     def __init__(self, title):
-        self.event = _create_event(title)
-        self.mutex = _create_mutex(title)
+        self._event = _create_event(title)
+        self._mutex = _create_mutex(title)
         # run only if no other one already is
-        self.running = win32api.GetLastError() != winerror.ERROR_ALREADY_EXISTS
-        if not self.running:
-            # signal the running one
-            win32event.SetEvent(self.event)
+        self.can_run = win32api.GetLastError() != winerror.ERROR_ALREADY_EXISTS
+        if not self.can_run:
+            print(f"\n{title} already running!!")
 
-        self.callback = None
-        self.thread = threading.Thread(target=self._check_another_started)
-        self.thread.start()
+        self._callback = None
+        self._thread = threading.Thread(target=self._check_another_started)
+        self._thread.start()
 
     def __enter__(self):
         return self
 
-    @property
-    def already_running(self):
-        return not self.running
-
     def set_callback_another_launched(self, callback):
-        self.callback = callback
+        self._callback = callback
 
     def _check_another_started(self):
-        while self.running:
-            win32event.WaitForSingleObject(self.event, win32event.INFINITE)
-            if self.callback:
-                self.callback()
+        while self.can_run:
+            win32event.WaitForSingleObject(self._event, win32event.INFINITE)
+            if self._callback:
+                self._callback()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.running = False
-        win32event.SetEvent(self.event)
-        self.thread.join()
+        self.can_run = False
+        # stop waiting waiting & signal the already running one
+        win32event.SetEvent(self._event)
+        self._thread.join()
 
-        for handle in (self.event, self.mutex):
+        for handle in (self._event, self._mutex):
             if handle:
                 win32api.CloseHandle(handle)

@@ -149,7 +149,6 @@ class TCTGWindow(widgets.Window):
 
     def loop(self):
         super().loop()
-        print("Exiting...")
         self.tctg.stop()
         self.tray.close()
         self.close()

@@ -5,10 +5,7 @@ if __name__ == "__main__":
     config = Loader("config.yaml").load()
 
     with SingleApp(config.title) as app:
-        if app.already_running:
-            print(f"{config.title} already running")
-
-        else:
+        if app.can_run:
             from tools import img_to64
             from tools.widgets import Splash
 
@@ -19,5 +16,3 @@ if __name__ == "__main__":
 
                 window = TCTGWindow(app, config)
             window.loop()
-
-    print("Exit")
