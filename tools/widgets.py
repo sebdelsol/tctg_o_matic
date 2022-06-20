@@ -246,8 +246,8 @@ class TextColor(sg.T):
 
 class AnimatedTxt(TextColor):
     def __init__(self, *args, dt=125, pattern="••", length=6, **kwargs):
-        self.pattern = pattern
-        self.length = length
+        self._pattern = pattern
+        self._length = length
         self._dt = dt
         self._index = 0
         self._animated = False
@@ -261,10 +261,10 @@ class AnimatedTxt(TextColor):
             self._animate(args[0], **kwargs)
 
     def _get_anim(self):
-        i = self._index % (self.length * 2)
-        i = i if i <= self.length else (self.length * 2 - i)
+        i = self._index % (self._length * 2)
+        i = i if i <= self._length else (self._length * 2 - i)
         self._index += 1
-        return " " * i + self.pattern
+        return " " * i + self._pattern
 
     def _animate(self, txt, **kwargs):
         if self._animated:
