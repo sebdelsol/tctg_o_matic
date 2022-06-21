@@ -43,7 +43,7 @@ class SingleApp:
     def __enter__(self):
         return self
 
-    def set_callback_another_launched(self, callback):
+    def set_callback_another_started(self, callback):
         self._callback = callback
 
     def _check_another_started(self):

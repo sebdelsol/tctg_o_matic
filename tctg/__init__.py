@@ -122,7 +122,7 @@ class TCTGWindow(widgets.Window):
             element_padding=(2, 2),
             alpha_channel=0,
         )
-        app.set_callback_another_launched(lambda: self.write_event_value(Events.unhide))
+        app.set_callback_another_started(lambda: self.write_event_value(Events.unhide))
         self.tctg = TCTG(config, self.write_event_value)
 
     def set_tray_icon(self, error):
