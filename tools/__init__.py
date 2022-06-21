@@ -38,7 +38,7 @@ def plural(txt, n):
         return txt
 
 
-def loc_timedelta(dt):
+def timedelta_loc(dt):
     values = re.findall(r"(\d+)", f"{timedelta(seconds=round(dt.total_seconds()))}")
     units = ["jour", "heure", "minute", "seconde"]
     return ", ".join(
@@ -48,7 +48,7 @@ def loc_timedelta(dt):
     )
 
 
-def loc_seconds_left(seconds):
+def seconds_left_loc(seconds):
     txt = f"{timedelta(seconds=round(seconds))}"
     return txt.replace(":", "h", 1).replace("day", "jour")
 

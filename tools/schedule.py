@@ -3,7 +3,7 @@ import threading
 from datetime import datetime, timedelta
 from types import SimpleNamespace
 
-from . import loc_timedelta
+from . import timedelta_loc
 
 
 class Duration:
@@ -90,12 +90,12 @@ class Duration:
         return txt
 
     def __repr__(self):
-        txt = f"Chaque {self._unit_if_only_one(loc_timedelta(self._duration))}"
+        txt = f"Chaque {self._unit_if_only_one(timedelta_loc(self._duration))}"
         if self._at_hour:
             txt += f" à {self._at_hour:%Hh%M}"
         if self._jitter >= timedelta():
             min_, max_ = self._jitter_boundaries
-            txt += f" ~ {'+' if min_ == 0 else '±'}{loc_timedelta(self._jitter * max_)}"
+            txt += f" ~ {'+' if min_ == 0 else '±'}{timedelta_loc(self._jitter * max_)}"
         return txt
 
 

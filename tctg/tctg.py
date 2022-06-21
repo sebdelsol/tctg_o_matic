@@ -1,7 +1,7 @@
 import webbrowser
 from datetime import datetime
 
-from tools import day_hour, loc_seconds_left
+from tools import day_hour, seconds_left_loc
 from tools.chrome import Chrome
 from tools.schedule import Duration, Schedule
 from tools.style import Style
@@ -75,7 +75,7 @@ class TCTG:
 
     def log_left(self, seconds):
         error_msg = " (ERREUR)" if self.error else ""
-        left = h1(f"dans {loc_seconds_left(seconds)}{error_msg}")
+        left = h1(f"dans {seconds_left_loc(seconds)}{error_msg}")
         self.event(Events.log_left, left.italic.warn(self.error))
 
     def log_error(self, err):
