@@ -15,12 +15,16 @@ grey = Style().grey40
 h1 = Style().bold
 
 
+def _date_txts(date):
+    day, hour = day_hour(date)
+    return " le ", h0_grey(day), " à ", h0_grey(hour)
+
+
 class TCTG:
     x_reward = '//td[@class="rowfollow"]/text()[.="{reward:,}"]/following::td[1]/input'
     x_reward_done = '//*[contains(text(), "Toutes nos félicitations!")]'
     x_infos_block = '//table[@id="info_block"]'
-    x_infos_txts = '(//span[@class="medium"])[1]'
-    x_infos_msg = '(//td[@class="text"])[2]'
+    x_infos = '(//span[@class="medium"])[1]', '(//td[@class="text"])[2]'
     x_rules = '//td[@class="embedded"]/ul'
 
     def __init__(self, config, event_callback):
@@ -61,27 +65,26 @@ class TCTG:
         prompt = Style("\n").smaller(5) if main else " •"
         self.event(Events.log, (prompt, " ", *txts))
 
-    @staticmethod
-    def get_date_txts(date):
-        day, hour = day_hour(date)
-        return " le ", h0_grey(day), " à ", h0_grey(hour)
-
     def log_update(self, scheduled):
         msg = "programmée" if scheduled else "forcée"
-        self.log(
-            h0(f"MàJ {msg}").warn(not scheduled).underline,
-            *self.get_date_txts(datetime.now()),
-            main=True,
-        )
+        update = h0(f"MàJ {msg}").warn(not scheduled).underline
+        self.log(update, *_date_txts(datetime.now()), main=True)
 
     def log_next(self, date):
-        self.log(h1("Prochaine MàJ").blue, *self.get_date_txts(date))
+        self.log(h1("Prochaine MàJ").blue, *_date_txts(date))
 
     def log_left(self, seconds):
         error_msg = " (ERREUR)" if self.error else ""
-        self.event(
-            Events.log_left,
-            h1(f"dans {loc_seconds_left(seconds)}{error_msg}").italic.warn(self.error),
+        left = h1(f"dans {loc_seconds_left(seconds)}{error_msg}")
+        self.event(Events.log_left, left.italic.warn(self.error))
+
+    def log_error(self, err):
+        self.log(
+            h0(err.name).underline.red,
+            " dans ",
+            h0(err.file).red,
+            " ligne ",
+            h0(err.line).red,
         )
 
     def show_infos(self):
@@ -103,9 +106,7 @@ class TCTG:
                 def update_infos():
                     goto_page("attendance.php")
                     driver.wait_for_clickable(TCTG.x_infos_block)
-                    infos_txts = driver.xpath(TCTG.x_infos_txts).text
-                    infos_msg = driver.xpath(TCTG.x_infos_msg).text
-                    return infos_updater(infos_txts, infos_msg)
+                    return infos_updater(*(driver.xpath(x).text for x in TCTG.x_infos))
 
                 # bonus ?
                 if update_infos():
@@ -133,13 +134,6 @@ class TCTG:
         self.error = bool(driver.error)
         self.event(Events.set_tray_icon, self.error)
         if self.error:
-            self.log(
-                h0(driver.error.name).underline.red,
-                " dans ",
-                h0(driver.error.file).red,
-                " ligne ",
-                h0(driver.error.line).red,
-            )
-            # schedule a retry
-            return self.retry
+            self.log_error(driver.error)
+            return self.retry  # schedule a retry
         return None
