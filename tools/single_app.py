@@ -49,7 +49,7 @@ class SingleApp:
     def _check_another_started(self):
         while self.can_run:
             win32event.WaitForSingleObject(self._event, win32event.INFINITE)
-            if self._callback:
+            if self.can_run and self._callback:
                 self._callback()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
