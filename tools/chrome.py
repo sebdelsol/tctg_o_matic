@@ -12,6 +12,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from win32api import HIWORD, GetFileVersionInfo
 
+from .style import Style
+
 
 def _get_chrome_main_version():
     filename = uc.find_chrome_executable()
@@ -58,30 +60,24 @@ class Chrome(uc.Chrome):
         self._driver_wait = WebDriverWait(self, wait_elt_timeout)
 
     def find_local_cookies(self, domain):
-        for cookie_file in ("Default\\Cookies", "Default\\Network\\Cookies"):
-            cookie_file = os.path.join(self.profile_folder, cookie_file)
-            if os.path.exists(cookie_file):
-                return browser_cookie3.chrome(
-                    domain_name=domain, cookie_file=cookie_file
-                )
+        for cookies in ("Default\\Cookies", "Default\\Network\\Cookies"):
+            cookies = os.path.join(self.profile_folder, cookies)
+            if os.path.exists(cookies):
+                return browser_cookie3.chrome(domain_name=domain, cookie_file=cookies)
         return None
 
     def load_cookies(self, url):
         domain = urlparse(url).netloc
         # do those cookies already exist in the local profile ?
         if not self.find_local_cookies(domain):
-            # get those from the regular Chrome profile
-            self.log("Load cookies")
-            self.get(url)
+            # preload cookies from the regular Chrome profile
+            self.log("Charge les cookies de ", Style(domain).bold)
+            self.execute_cdp_cmd("Network.enable", {})
+            cookie_keys = "domain", "name", "value", "path", "expires"
             for cookie in browser_cookie3.chrome(domain_name=domain):
-                self.add_cookie(
-                    {
-                        "name": cookie.name,
-                        "value": cookie.value,
-                        "path": cookie.path,
-                        "expiry": cookie.expires,
-                    }
-                )
+                cookie = {key: getattr(cookie, key) for key in cookie_keys}
+                self.execute_cdp_cmd("Network.setCookie", cookie)
+            self.execute_cdp_cmd("Network.disable", {})
 
     def wait_until(self, until, timeout=None):
         if timeout and timeout != self._wait_elt_timeout:
