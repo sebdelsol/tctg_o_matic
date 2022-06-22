@@ -12,6 +12,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from win32api import HIWORD, GetFileVersionInfo
 
+from . import timedelta_loc
 from .style import Style
 
 
@@ -74,10 +75,16 @@ class Chrome(uc.Chrome):
             self.log("Charge les cookies de ", Style(domain).bold)
             self.execute_cdp_cmd("Network.enable", {})
             cookie_keys = "domain", "name", "value", "path", "expires"
+            expires = []
             for cookie in browser_cookie3.chrome(domain_name=domain):
+                expires.append(datetime.fromtimestamp(cookie.expires))
                 cookie = {key: getattr(cookie, key) for key in cookie_keys}
                 self.execute_cdp_cmd("Network.setCookie", cookie)
             self.execute_cdp_cmd("Network.disable", {})
+
+            if expires:
+                expire = timedelta_loc(datetime.now() - min(expires))
+                self.log("expirent dans ", Style(expire).bold)
 
     def wait_until(self, until, timeout=None):
         if timeout and timeout != self._wait_elt_timeout:

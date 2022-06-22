@@ -41,11 +41,12 @@ def plural(txt, n):
 def timedelta_loc(dt):
     values = re.findall(r"(\d+)", f"{timedelta(seconds=round(dt.total_seconds()))}")
     units = ["jour", "heure", "minute", "seconde"]
-    return ", ".join(
-        f"{v} {plural(unit, v)}"
-        for value, unit in zip(values, units[4 - len(values) :])
-        if (v := int(value)) != 0
-    )
+    if len(values) == 4 and (days := int(values[0])) >= 365:
+        years, days = divmod(days, 365)
+        uv = {"année": years, "jour": days}
+    else:
+        uv = {unit: int(v) for v, unit in zip(values, units[4 - len(values) :])}
+    return ", ".join(f"{v} {plural(unit, v)}" for unit, v in uv.items() if v > 0)
 
 
 def seconds_left_loc(seconds):
