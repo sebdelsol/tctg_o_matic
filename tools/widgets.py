@@ -206,11 +206,11 @@ class MLineAutoSize(sg.Frame):
     def _get_rows(txts):
         row = []
         for txt in txts:
-            txt = txt.splitlines(True)
-            row.append(txt[0])
-            if txt[0] == "\n" or len(txt) > 1:
-                yield row
-                row = txt[1:]
+            if txt:= txt.splitlines(True):
+                row.append(txt[0])
+                if txt[0] == "\n" or len(txt) > 1:
+                    yield row
+                    row = txt[1:]
 
         if row:
             yield row

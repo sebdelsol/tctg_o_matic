@@ -62,7 +62,9 @@ def number(number_str):
                 thousand, decimals = thousand.split(".")
                 yield number_str(thousand)
                 if decimals != "0":
+                    decimals, left = decimals[:2], decimals[2:]
                     yield number_str(f".{decimals}").smaller(2)
+                    yield number_str(f"{left}").smaller(5)
             else:
                 yield number_str(thousand)
                 yield number_str(" ").smaller(2)

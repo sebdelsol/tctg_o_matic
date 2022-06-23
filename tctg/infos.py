@@ -147,9 +147,9 @@ class InfosHandler:
             *row(
                 h1("Ratio ").blue,
                 *number(
-                    h1(
-                        "∞" if infos.ratio == float("inf") else round(infos.ratio, 2)
-                    ).warn(infos.ratio <= 1)
+                    h1("∞" if infos.ratio == float("inf") else infos.ratio).warn(
+                        infos.ratio <= 1
+                    )
                 ),
             ),
             *row(
