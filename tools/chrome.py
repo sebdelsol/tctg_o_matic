@@ -60,7 +60,7 @@ class Chrome(uc.Chrome):
         self._wait_elt_timeout = wait_elt_timeout
         self._driver_wait = WebDriverWait(self, wait_elt_timeout)
 
-    def find_local_cookies(self, domain):
+    def _find_local_cookies(self, domain):
         for cookies in ("Default\\Cookies", "Default\\Network\\Cookies"):
             cookies = os.path.join(self.profile_folder, cookies)
             if os.path.exists(cookies):
@@ -84,7 +84,7 @@ class Chrome(uc.Chrome):
     def load_cookies(self, url):
         domain = urlparse(url).netloc
         # do those cookies already exist in the local profile ?
-        if not self.find_local_cookies(domain):
+        if not self._find_local_cookies(domain):
             # preload cookies from the regular Chrome profile
             self.log("Charge les cookies de ", Style(domain).bold)
             self._preload_cookies_from_chrome(domain)
