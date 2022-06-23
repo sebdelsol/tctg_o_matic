@@ -67,24 +67,27 @@ class Chrome(uc.Chrome):
                 return browser_cookie3.chrome(domain_name=domain, cookie_file=cookies)
         return None
 
+    def _preload_cookies_from_chrome(self, domain):
+        cookie_keys = "domain", "name", "value", "path", "expires"
+        cookies = browser_cookie3.chrome(domain_name=domain)
+
+        self.execute_cdp_cmd("Network.enable", {})
+        for cookie in cookies:
+            cookie = {key: getattr(cookie, key) for key in cookie_keys}
+            self.execute_cdp_cmd("Network.setCookie", cookie)
+        self.execute_cdp_cmd("Network.disable", {})
+
+        if expires := (datetime.fromtimestamp(cookie.expires) for cookie in cookies):
+            expire = timedelta_loc(datetime.now() - min(expires))
+            self.log("expirent dans ", Style(expire).bold)
+
     def load_cookies(self, url):
         domain = urlparse(url).netloc
         # do those cookies already exist in the local profile ?
         if not self.find_local_cookies(domain):
             # preload cookies from the regular Chrome profile
             self.log("Charge les cookies de ", Style(domain).bold)
-            self.execute_cdp_cmd("Network.enable", {})
-            cookie_keys = "domain", "name", "value", "path", "expires"
-            expires = []
-            for cookie in browser_cookie3.chrome(domain_name=domain):
-                expires.append(datetime.fromtimestamp(cookie.expires))
-                cookie = {key: getattr(cookie, key) for key in cookie_keys}
-                self.execute_cdp_cmd("Network.setCookie", cookie)
-            self.execute_cdp_cmd("Network.disable", {})
-
-            if expires:
-                expire = timedelta_loc(datetime.now() - min(expires))
-                self.log("expirent dans ", Style(expire).bold)
+            self._preload_cookies_from_chrome(domain)
 
     def wait_until(self, until, timeout=None):
         if timeout and timeout != self._wait_elt_timeout:
