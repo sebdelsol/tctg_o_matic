@@ -96,13 +96,15 @@ class InfosHandler:
         infos.speed = round(infos.bonuses.speed(config) or infos.speed or 0)
 
         # update reward_in_days
-        threshold_days, bonuses = zip(*config.bonus.consecutive_days)
-        bonuses = (0,) + bonuses
-        bonus_consecutive = lambda day: bonuses[bisect(threshold_days, day)]
+        bonus_days, bonus_pts = zip(*config.bonus.consecutive_days)
+        bonus_pts = (0,) + bonus_pts
+
+        def bonus_consecutive(day):
+            return bonus_pts[bisect(bonus_days, day)]
 
         consecutive_days = infos.consecutive_days
         dbonus = infos.dbonus - bonus_consecutive(consecutive_days)
-        left = config.reward - infos.bonus
+        left = config.reward.pts - infos.bonus
         infos.reward_in_days = 0
         while left > 0:
             infos.reward_in_days += 1
@@ -165,16 +167,32 @@ class InfosHandler:
                 h5(f" {infos.dl[1]}"),
             ),
             interline,
-            *row(h1("Cadeau").blue, h4(" à ").blue, *number(h1(config.reward).green)),
+            *row(
+                h1("Reward ").blue,
+                *number(h1(config.reward.pts).green),
+            ),
+            *row(
+                *number(h2(config.reward.gb).green),
+                h5(" GB dans "),
+                h2(infos.reward_in_days).blue,
+                h5(f" {plural('jour', infos.reward_in_days)}"),
+            ),
             *row(
                 h5("~"),
                 *number(h3(round(infos.speed + infos.dbonus)).blue),
                 h5(" pts/jour"),
             ),
             *row(
-                h5("dans "),
-                h2(infos.reward_in_days).blue,
-                h5(f" {plural('jour', infos.reward_in_days)}"),
+                h5("~"),
+                *number(
+                    h3(
+                        config.reward.gb
+                        * (infos.speed + infos.dbonus)
+                        / config.reward.pts
+                    ).blue,
+                    1,
+                ),
+                h5(" GB/jour"),
             ),
         )[:-1]
         # remove the last "\n" from row()

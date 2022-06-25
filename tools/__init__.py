@@ -54,9 +54,11 @@ def seconds_left_loc(seconds):
     return txt.replace(":", "h", 1).replace("day", "jour")
 
 
-def number(number_str):
+def number(number_str, n_decimals=None):
     try:
         number_ = float(number_str)
+        if n_decimals:
+            number_ = round(number_, n_decimals)
         for thousand in f"{number_:,}".split(","):
             if "." in thousand:
                 thousand, decimals = thousand.split(".")

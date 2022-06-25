@@ -119,10 +119,11 @@ class TCTG:
                     self.log(Style("Bonus déjà obtenu aujourd'hui").green)
 
                 # reward ?
-                if self.infos.bonus >= self.config.reward:
+                reward = self.config.reward.pts
+                if self.infos.bonus >= reward:
                     self.log(h0("Cadeau obtenu !!").underline.green)
                     goto_page("mybonus.php")
-                    x_reward = TCTG.x_reward.format(reward=self.config.reward)
+                    x_reward = TCTG.x_reward.format(reward=reward)
                     driver.wait_for_clickable(x_reward).click()
                     driver.wait_for_clickable(TCTG.x_reward_done)
                     update_infos()

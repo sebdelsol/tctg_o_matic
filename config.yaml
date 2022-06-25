@@ -4,7 +4,9 @@ domain: tctg.pm
 infos_file: infos.yaml
 update_at_start: true
 get_bonus_rules: true
-reward: 25000
+reward:
+  pts: 25000
+  gb: 50
 bonus:
   max: 1000
   added_per_day: 5
