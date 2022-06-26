@@ -130,7 +130,7 @@ class InfosHandler:
         day, hour = day_hour(infos.date)
         rows = (
             *row(h0(config.title).blue),
-            *row(h2(day).blue, h4(" à ").blue, h2(hour).blue),
+            *row(h3(day).blue, h4(" à ").blue, h2(hour).blue),
             *row(
                 h3(f"{'' if infos.connected else 'Pas '}Connecté").warn(
                     not infos.connected
@@ -178,10 +178,10 @@ class InfosHandler:
                 h5(f" {plural('jour', infos.reward_in_days)}"),
             ),
             *row(
-                *number(h3(round(infos.speed + infos.dbonus)).blue),
+                *number(h3(infos.speed + infos.dbonus).blue, 0),
                 h5(" pts/jour, "),
                 *number(
-                    h3(
+                    h2(
                         config.reward.gb
                         * (infos.speed + infos.dbonus)
                         / config.reward.pts

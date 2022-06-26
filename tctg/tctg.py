@@ -17,7 +17,7 @@ h1 = Style().bold
 
 def _date_txts(date):
     day, hour = day_hour(date)
-    return " le ", h0_grey(day), " à ", h0_grey(hour)
+    return " le ", grey(day), " à ", h0_grey(hour)
 
 
 class TCTG:
