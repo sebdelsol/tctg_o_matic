@@ -190,7 +190,7 @@ class InfosHandler:
                         * (infos.speed + infos.dbonus)
                         / config.reward.pts
                     ).blue,
-                    1,
+                    2,
                 ),
                 h5(" GB/jour"),
             ),
