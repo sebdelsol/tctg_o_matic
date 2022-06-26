@@ -128,7 +128,7 @@ class InfosHandler:
         infos = self.infos
         config = self.config
         day, hour = day_hour(infos.date)
-        return (
+        rows = (
             *row(h0(config.title).blue),
             *row(h2(day).blue, h4(" à ").blue, h2(hour).blue),
             *row(
@@ -178,12 +178,8 @@ class InfosHandler:
                 h5(f" {plural('jour', infos.reward_in_days)}"),
             ),
             *row(
-                h5("~"),
                 *number(h3(round(infos.speed + infos.dbonus)).blue),
-                h5(" pts/jour"),
-            ),
-            *row(
-                h5("~"),
+                h5(" pts/jour, "),
                 *number(
                     h3(
                         config.reward.gb
@@ -194,5 +190,5 @@ class InfosHandler:
                 ),
                 h5(" GB/jour"),
             ),
-        )[:-1]
-        # remove the last "\n" from row()
+        )
+        return rows[:-1]  # remove the last "\n" from row()

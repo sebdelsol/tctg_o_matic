@@ -34,7 +34,7 @@ class SingleApp:
         # run only if no other already is
         self.can_run = win32api.GetLastError() != winerror.ERROR_ALREADY_EXISTS
         if not self.can_run:
-            print(f"\n{title} already running!!")
+            print(f"\n{title} already running !!")
 
         self._callback = None
         self._thread = threading.Thread(target=self._check_another_started)
