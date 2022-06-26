@@ -1,12 +1,13 @@
 import os
 import shutil
+import time
 import traceback
 from datetime import datetime
 from types import SimpleNamespace
 from urllib.parse import urlparse
 
-import browser_cookie3
 import undetected_chromedriver as uc
+from browser_cookie3 import chrome as chrome_cookies
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -60,16 +61,18 @@ class Chrome(uc.Chrome):
         self._wait_elt_timeout = wait_elt_timeout
         self._driver_wait = WebDriverWait(self, wait_elt_timeout)
 
-    def _find_local_cookies(self, domain):
+    def _are_local_cookies_valid(self, domain):
         for cookies in ("Default\\Cookies", "Default\\Network\\Cookies"):
             cookies = os.path.join(self.profile_folder, cookies)
             if os.path.exists(cookies):
-                return browser_cookie3.chrome(domain_name=domain, cookie_file=cookies)
+                in_2mn = time.time() + 120
+                if cookies := chrome_cookies(domain_name=domain, cookie_file=cookies):
+                    return all(not cookie.is_expired(now=in_2mn) for cookie in cookies)
         return None
 
     def _preload_cookies_from_chrome(self, domain):
         cookie_keys = "domain", "name", "value", "path", "expires"
-        cookies = browser_cookie3.chrome(domain_name=domain)
+        cookies = chrome_cookies(domain_name=domain)
 
         self.execute_cdp_cmd("Network.enable", {})
         for cookie in cookies:
@@ -77,14 +80,14 @@ class Chrome(uc.Chrome):
             self.execute_cdp_cmd("Network.setCookie", cookie)
         self.execute_cdp_cmd("Network.disable", {})
 
-        if expires := (datetime.fromtimestamp(cookie.expires) for cookie in cookies):
-            expire = timedelta_loc(datetime.now() - min(expires))
-            self.log("expirent dans ", Style(expire).bold)
+        if expires := (cookie.expires for cookie in cookies):
+            expire = datetime.now() - datetime.fromtimestamp(min(expires))
+            self.log("expirent dans ", Style(timedelta_loc(expire)).bold)
 
     def load_cookies(self, url):
         domain = urlparse(url).netloc
-        # do those cookies already exist in the local profile ?
-        if not self._find_local_cookies(domain):
+        # do local profile cookies are valid ?
+        if not self._are_local_cookies_valid(domain):
             # preload cookies from the regular Chrome profile
             self.log("Charge les cookies de ", Style(domain).bold)
             self._preload_cookies_from_chrome(domain)
