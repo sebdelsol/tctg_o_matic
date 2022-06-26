@@ -97,7 +97,7 @@ class InfosHandler:
 
         # update reward_in_days
         bonus_days, bonus_pts = zip(*config.bonus.consecutive_days)
-        bonus_pts = (0,) + bonus_pts
+        bonus_pts = 0, *bonus_pts
 
         def bonus_consecutive(day):
             return bonus_pts[bisect(bonus_days, day)]
@@ -191,4 +191,4 @@ class InfosHandler:
                 h5(" GB/jour"),
             ),
         )
-        return rows[:-1]  # remove the last "\n" from row()
+        return rows[:-1]  # remove the last "\n" from the last row
