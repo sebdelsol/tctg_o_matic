@@ -72,7 +72,7 @@ class Duration:
         return self
 
     def __getattr__(self, unit):
-        assert unit in self.time_units, f"Duration object has no time {unit=}"
+        assert unit in Duration.time_units, f"Duration object has no time {unit=}"
         if isinstance(self._duration, timedelta):
             # duration already set, then it's about jitter
             assert not isinstance(self._jitter, timedelta), "need a jitter value"

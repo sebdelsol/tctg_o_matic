@@ -30,7 +30,7 @@ class TCTGWindow(widgets.Window):
             ["", []],
             window=self,
             single_click_events=True,
-            icon=self.ok_ico,
+            icon=TCTGWindow.ok_ico,
         )
         Events.tray_click = self.tray.key
 
@@ -68,7 +68,7 @@ class TCTGWindow(widgets.Window):
         )
         b_logo = widgets.ButtonCooldown(
             "",
-            image_data=self.logo,
+            image_data=TCTGWindow.logo,
             cooldown=2000,
             button_color=sg.theme_background_color(),
             over_color=sg.theme_button_color_background(),
@@ -126,7 +126,7 @@ class TCTGWindow(widgets.Window):
         self.tctg = TCTG(config, self.write_event_value)
 
     def set_tray_icon(self, error):
-        self.tray.change_icon(self.error_ico if error else self.ok_ico)
+        self.tray.change_icon(TCTGWindow.error_ico if error else TCTGWindow.ok_ico)
         if error:
             self.UnHide()
 

@@ -17,10 +17,6 @@ from datetime import timedelta
 from PIL import Image
 
 
-def day_hour(date):
-    return f"{date:%d/%m/%y}", f"{date:%Hh%M:%S}"
-
-
 def img_to64(path, height=None):
     im = Image.open(path)
     if height:
@@ -29,6 +25,10 @@ def img_to64(path, height=None):
     buffer = io.BytesIO()
     im.save(buffer, "PNG")
     return base64.b64encode(buffer.getvalue())
+
+
+def day_hour(date):
+    return f"{date:%d/%m/%y}", f"{date:%Hh%M:%S}"
 
 
 def plural(txt, n):

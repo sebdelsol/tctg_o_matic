@@ -14,7 +14,6 @@ class Bonus(YamlMapping):
 class Bonuses(list, YamlSequence):
     a_hour = 3600  # seconds
     a_day = a_hour * 24  # seconds
-    _seconds = lambda begin, end: (end.date - begin.date).total_seconds()
 
     def add(self, **bonus):
         # does this bonus occured after the last recorded one ?
@@ -28,28 +27,33 @@ class Bonuses(list, YamlSequence):
     def _two_by_two(self, reverse=False):
         return zip(self[-2::-1], self[:0:-1]) if reverse else zip(self[:-1], self[1:])
 
+    @staticmethod
+    def _seconds(begin, end):
+        return (end.date - begin.date).total_seconds()
+
     def speed(self, config):
         if len(self) >= 2:
             dt = 0
             bonus = 0
             dbonus = 0
             for begin, end in self._two_by_two():
-                dt += Bonuses._seconds(begin, end)
+                dt += self._seconds(begin, end)
                 bonus += end.bonus - begin.bonus
                 dbonus += end.dbonus
 
             # do we have enough to compute speed ?
-            if dt >= config.bonuses.compute_speed_min_hours * self.a_hour:
-                return (bonus - dbonus) * self.a_day / dt
+            if dt >= config.bonuses.compute_speed_min_hours * Bonuses.a_hour:
+                return (bonus - dbonus) * Bonuses.a_day / dt
         return None
 
     def crop(self, config):
         if len(self) >= 2:
+            config = config.bonuses
             # remove those older than some days from now
             dt = 0
-            crop_older_than = config.bonuses.crop_older_than_days * self.a_day
+            crop_older_than = config.crop_older_than_days * Bonuses.a_day
             for begin, end in self._two_by_two(reverse=True):
-                dt += Bonuses._seconds(begin, end)
+                dt += self._seconds(begin, end)
                 if dt >= crop_older_than:
                     crop_index = self.index(begin)
                     self._set(self[crop_index:])
@@ -58,9 +62,9 @@ class Bonuses(list, YamlSequence):
             # compress by at least some hours slice
             dt = 0
             compressed = [self[0]]
-            compress_less_than = config.bonuses.compress_less_than_hours * self.a_hour
+            compress_less_than = config.compress_less_than_hours * Bonuses.a_hour
             for begin, end in self._two_by_two():
-                dt += Bonuses._seconds(begin, end)
+                dt += self._seconds(begin, end)
                 if end.dbonus > 0 or dt >= compress_less_than:
                     compressed.append(end)
                     dt = 0
