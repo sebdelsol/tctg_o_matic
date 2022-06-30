@@ -21,12 +21,6 @@ def _date_txts(date):
 
 
 class TCTG:
-    x_reward = '//td[@class="rowfollow"]/text()[.="{reward:,}"]/following::td[1]/input'
-    x_reward_done = '//*[contains(text(), "Toutes nos félicitations!")]'
-    x_infos_block = '//table[@id="info_block"]'
-    x_infos = '(//span[@class="medium"])[1]', '(//td[@class="text"])[2]'
-    x_rules = '//td[@class="embedded"]/ul'
-
     def __init__(self, config, event_callback):
         self.config = config
         self.event = event_callback
@@ -99,33 +93,40 @@ class TCTG:
 
         with Chrome(**self.chrome_kw) as driver:
             driver.load_cookies(self.url)
-            goto_page = lambda page: driver.get(f"{self.url}/{page}")
+
+            reward = self.config.reward.pts
+            x_reward = f'//td[@class="rowfollow"]/*[.="{reward:,}"]/following::input[1]'
+            x_reward_done = '//*[contains(text(), "Toutes nos félicitations!")]'
+            x_infos_block = '//table[@id="info_block"]'
+            x_infos = '(//span[@class="medium"])[1]', '(//td[@class="text"])[2]'
+            x_rules = '//td[@class="embedded"]/ul'
 
             with self.infos.updater(datetime.now()) as infos_updater:
 
+                def goto_page(page):
+                    return driver.get(f"{self.url}/{page}")
+
                 def update_infos():
                     goto_page("attendance.php")
-                    driver.wait_for_clickable(TCTG.x_infos_block)
-                    return infos_updater(*(driver.xpath(x).text for x in TCTG.x_infos))
+                    driver.wait_for_clickable(x_infos_block)
+                    return infos_updater(*(driver.xpath(x).text for x in x_infos))
 
                 # bonus ?
                 if update_infos():
                     self.log(h0("Bonus du jour obtenu !!").green)
                     if self.config.get_bonus_rules:
                         with open("bonus_rules.txt", "w", encoding="utf8") as f:
-                            f.write(driver.xpath(TCTG.x_rules).text)
+                            f.write(driver.xpath(x_rules).text)
                     update_infos()
                 else:
                     self.log(Style("Bonus déjà obtenu aujourd'hui").green)
 
                 # reward ?
-                reward = self.config.reward.pts
                 if self.infos.bonus >= reward:
                     self.log(h0("Cadeau obtenu !!").underline.green)
                     goto_page("mybonus.php")
-                    x_reward = TCTG.x_reward.format(reward=reward)
                     driver.wait_for_clickable(x_reward).click()
-                    driver.wait_for_clickable(TCTG.x_reward_done)
+                    driver.wait_for_clickable(x_reward_done)
                     update_infos()
 
             self.show_infos()
