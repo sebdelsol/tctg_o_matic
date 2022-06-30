@@ -95,7 +95,9 @@ class TCTG:
             driver.load_cookies(self.url)
 
             reward = self.config.reward.pts
-            x_reward = f'//td[@class="rowfollow"]/*[.="{reward:,}"]/following::input[1]'
+            x_reward = (
+                f'//td[@class="rowfollow"]/text()[.="{reward:,}"]/following::input[1]'
+            )
             x_reward_done = '//*[contains(text(), "Toutes nos félicitations!")]'
             x_infos = '(//span[@class="medium"])[1]', '(//td[@class="text"])[2]'
             x_infos_block = '//table[@id="info_block"]'
