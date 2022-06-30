@@ -97,8 +97,8 @@ class TCTG:
             reward = self.config.reward.pts
             x_reward = f'//td[@class="rowfollow"]/*[.="{reward:,}"]/following::input[1]'
             x_reward_done = '//*[contains(text(), "Toutes nos félicitations!")]'
-            x_infos_block = '//table[@id="info_block"]'
             x_infos = '(//span[@class="medium"])[1]', '(//td[@class="text"])[2]'
+            x_infos_block = '//table[@id="info_block"]'
             x_rules = '//td[@class="embedded"]/ul'
 
             with self.infos.updater(datetime.now()) as infos_updater:
