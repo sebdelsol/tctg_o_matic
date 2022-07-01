@@ -168,7 +168,8 @@ class InfosHandler:
             ),
             interline,
             *row(
-                h1("Cadeau ").blue,
+                h1("Cadeau").blue,
+                h3(" à ").blue,
                 *number(h1(config.reward.pts).green),
             ),
             *row(
