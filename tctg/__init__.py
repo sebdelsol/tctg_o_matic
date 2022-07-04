@@ -112,12 +112,7 @@ class TCTGWindow(widgets.Window):
         menu = [b_logo, b_quit, self.b_update, self.left, sg.P(), b_minimize]
         super().__init__(
             config.title,
-            [
-                [
-                    self.infos,
-                    sg.Col([menu, [self.logs]], expand_y=True),
-                ]
-            ],
+            [[self.infos, sg.Col([menu, [self.logs]], expand_y=True)]],
             event_to_action=event_to_action,
             element_padding=(2, 2),
             alpha_channel=0,
