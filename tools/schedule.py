@@ -12,7 +12,7 @@ class Duration:
     def __init__(self, duration=0):
         self._duration = duration
         self._jitter = timedelta()
-        self._jitter_boundaries = 0, 0
+        self._jitter_range = 0, 0
         self._at_hour = None
         self._date = None
 
@@ -29,12 +29,12 @@ class Duration:
             self._date = now + self._duration
 
         # date possible with min jitter needs to be >= now
-        min_jitter = self._jitter * min(self._jitter_boundaries)
+        min_jitter = self._jitter * min(self._jitter_range)
         while self._date + min_jitter < now:
             self._date += self._duration
 
         # add rnd jitter
-        self._date += self._jitter * random.uniform(*self._jitter_boundaries)
+        self._date += self._jitter * random.uniform(*self._jitter_range)
         return self
 
     @property
@@ -51,13 +51,13 @@ class Duration:
 
     def to(self, to_hour):
         assert self._at_hour, "at(hour) needs to be set"
-        self._jitter_boundaries = 0, 1
+        self._jitter_range = 0, 1
         self._jitter = datetime.strptime(to_hour, "%H:%M") - self._at_hour
         assert self._jitter >= timedelta(), "to(hour) needs to be >= at(hour)"
         return self
 
     def jitter(self, jitter, add=False):
-        self._jitter_boundaries = 0 if add else -1, 1
+        self._jitter_range = 0 if add else -1, 1
         self._jitter = jitter
         return self
 
@@ -67,7 +67,7 @@ class Duration:
     @property
     def percent(self):
         assert not isinstance(self._jitter, timedelta), "need a jitter value"
-        self._jitter_boundaries = -(percent := self._jitter / 100), percent
+        self._jitter_range = -(percent := self._jitter / 100), percent
         self._jitter = self._duration
         return self
 
@@ -94,7 +94,7 @@ class Duration:
         if self._at_hour:
             txt += f" à {self._at_hour:%Hh%M}"
         if self._jitter >= timedelta():
-            min_, max_ = self._jitter_boundaries
+            min_, max_ = self._jitter_range
             txt += f" ~ {'+' if min_ == 0 else '±'}{timedelta_loc(self._jitter * max_)}"
         return txt
 
