@@ -24,8 +24,8 @@ class Bonuses(list, YamlSequence):
         self.clear()
         self.extend(new_list)
 
-    def _two_by_two(self, reverse=False):
-        return zip(self[-2::-1], self[:0:-1]) if reverse else zip(self[:-1], self[1:])
+    def _pairs(self):  # [[0, 1], [1, 2], [2, 3], ...]
+        return list(zip(iter(self), iter(self[1:])))
 
     @staticmethod
     def _seconds(begin, end):
@@ -36,7 +36,7 @@ class Bonuses(list, YamlSequence):
             dt = 0
             bonus = 0
             dbonus = 0
-            for begin, end in self._two_by_two():
+            for begin, end in self._pairs():
                 dt += self._seconds(begin, end)
                 bonus += end.bonus - begin.bonus
                 dbonus += end.dbonus
@@ -52,7 +52,7 @@ class Bonuses(list, YamlSequence):
             # remove those older than some days from now
             dt = 0
             crop_older_than = config.crop_older_than_days * Bonuses.a_day
-            for begin, end in self._two_by_two(reverse=True):
+            for begin, end in reversed(self._pairs()):
                 dt += self._seconds(begin, end)
                 if dt >= crop_older_than:
                     crop_index = self.index(begin)
@@ -63,7 +63,7 @@ class Bonuses(list, YamlSequence):
             dt = 0
             compressed = [self[0]]
             compress_less_than = config.compress_less_than_hours * Bonuses.a_hour
-            for begin, end in self._two_by_two():
+            for begin, end in self._pairs():
                 dt += self._seconds(begin, end)
                 if end.dbonus > 0 or dt >= compress_less_than:
                     compressed.append(end)
@@ -73,7 +73,7 @@ class Bonuses(list, YamlSequence):
             self._set(compressed)
 
             # crop before an event that breaks the speed computation
-            for begin, end in self._two_by_two(reverse=True):
+            for begin, end in reversed(self._pairs()):
                 cross_days = (end.date.date() - begin.date.date()).days
                 if (
                     (cross_days == 1 and end.dbonus == 0)  # missing bonus
