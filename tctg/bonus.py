@@ -17,10 +17,11 @@ class Bonus(YamlMapping):
         return end.bonus - self.bonus
 
 
-class Bonuses(list, YamlSequence):
-    a_hour = 3600  # seconds
-    a_day = a_hour * 24  # seconds
+SECONDS_A_HOUR = 3600
+SECONDS_A_DAY = SECONDS_A_HOUR * 24
 
+
+class Bonuses(list, YamlSequence):
     def add(self, **bonus):
         # does this bonus occured after the last recorded one ?
         if len(self) == 0 or bonus["date"] > self[-1].date:
@@ -42,8 +43,8 @@ class Bonuses(list, YamlSequence):
                 bonus += begin.bonus_to(end) - end.dbonus
 
             # do we have enough to compute speed ?
-            if dt >= config.bonuses.compute_speed_min_hours * Bonuses.a_hour:
-                return bonus * Bonuses.a_day / dt
+            if dt >= config.bonuses.compute_speed_min_hours * SECONDS_A_HOUR:
+                return bonus * SECONDS_A_DAY / dt
         return None
 
     def crop(self, config):
@@ -51,7 +52,7 @@ class Bonuses(list, YamlSequence):
             config = config.bonuses
             # remove those older than some days from now
             dt = 0
-            crop_older_than = config.crop_older_than_days * Bonuses.a_day
+            crop_older_than = config.crop_older_than_days * SECONDS_A_DAY
             for begin, end in reversed(self._pairs()):
                 dt += begin.seconds_to(end)
                 if dt >= crop_older_than:
@@ -62,7 +63,7 @@ class Bonuses(list, YamlSequence):
             # compress by at least some hours slice
             dt = 0
             compressed = [self[0]]
-            compress_less_than = config.compress_less_than_hours * Bonuses.a_hour
+            compress_less_than = config.compress_less_than_hours * SECONDS_A_HOUR
             for begin, end in self._pairs():
                 dt += begin.seconds_to(end)
                 if end.dbonus > 0 or dt >= compress_less_than:
