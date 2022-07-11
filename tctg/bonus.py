@@ -3,6 +3,9 @@ from datetime import datetime
 
 from tools.loader import YamlMapping, YamlSequence
 
+SECONDS_A_HOUR = 3600
+SECONDS_A_DAY = SECONDS_A_HOUR * 24
+
 
 @dataclass
 class Bonus(YamlMapping):
@@ -10,15 +13,14 @@ class Bonus(YamlMapping):
     bonus: float
     dbonus: float
 
+    def days_to(self, end):
+        return (end.date.date() - self.date.date()).days
+
     def seconds_to(self, end):
         return (end.date - self.date).total_seconds()
 
     def bonus_to(self, end):
         return end.bonus - self.bonus
-
-
-SECONDS_A_HOUR = 3600
-SECONDS_A_DAY = SECONDS_A_HOUR * 24
 
 
 class Bonuses(list, YamlSequence):
@@ -31,7 +33,7 @@ class Bonuses(list, YamlSequence):
         self.clear()
         self.extend(new_list)
 
-    def _pairs(self):  # [[0, 1], [1, 2], [2, 3], ...]
+    def _pairs(self):  # [0, 1, 2] -> [[0, 1], [1, 2]]
         return list(zip(iter(self), iter(self[1:])))
 
     def speed(self, config):
@@ -41,7 +43,6 @@ class Bonuses(list, YamlSequence):
             for begin, end in self._pairs():
                 dt += begin.seconds_to(end)
                 bonus += begin.bonus_to(end) - end.dbonus
-
             # do we have enough to compute speed ?
             if dt >= config.bonuses.compute_speed_min_hours * SECONDS_A_HOUR:
                 return bonus * SECONDS_A_DAY / dt
@@ -75,7 +76,7 @@ class Bonuses(list, YamlSequence):
 
             # crop before an event that breaks the speed computation
             for begin, end in reversed(self._pairs()):
-                cross_days = (end.date.date() - begin.date.date()).days
+                cross_days = begin.days_to(end)
                 if (
                     (cross_days == 1 and end.dbonus == 0)  # missing bonus
                     or begin.bonus_to(end) < 0  # consummed bonus
