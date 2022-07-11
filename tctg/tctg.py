@@ -116,9 +116,9 @@ class TCTG:
                 # bonus ?
                 if update_infos():
                     self.log(h0("Bonus du jour obtenu !!").green)
-                    if self.config.get_bonus_rules:
-                        with open("bonus_rules.txt", "w", encoding="utf8") as f:
-                            f.write(driver.xpath(x_rules).text)
+                    bonus_rules = driver.xpath(x_rules).text
+                    if self.infos.set_config_bonus(bonus_rules):
+                        self.log(h0("MàJ des config Bonus !!").underline.red)
                     update_infos()
                 else:
                     self.log(Style("Bonus déjà obtenu aujourd'hui").green)

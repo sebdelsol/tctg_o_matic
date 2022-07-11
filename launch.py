@@ -1,11 +1,11 @@
-from tools.loader import Loader
+from tools.config import LoaderConfig
 from tools.single_app import SingleApp
 
 CONFIG = "config.yaml"
 LOGO = "icons/logo.ico"
 
 if __name__ == "__main__":
-    config = Loader(CONFIG).load()
+    config = LoaderConfig(CONFIG)
 
     with SingleApp(config.title) as app:
         if app.can_run:

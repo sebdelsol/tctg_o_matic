@@ -1,8 +1,10 @@
 import os
 from functools import partial
-from types import SimpleNamespace
 
 import yaml
+
+# dump without aliases to avoid shared objects at loading
+yaml.SafeDumper.ignore_aliases = lambda *args: True
 
 
 class YamlLoader:
@@ -31,32 +33,6 @@ class YamlSequence(YamlLoader, register=False):
 
     _yaml_load = lambda loader, node, cls: cls(loader.construct_sequence(node))
     _yaml_save = lambda dumper, data, tag: dumper.represent_sequence(tag, data)
-
-
-# dump without aliases to avoid shared objects at loading
-yaml.SafeDumper.ignore_aliases = lambda *args: True
-
-
-class Config(SimpleNamespace, YamlLoader):
-    """nested SimpleNamespace that can be loaded and saved"""
-
-    _to_obj = lambda a_dict: Config(
-        **{
-            k: Config._to_obj(v) if isinstance(v, dict) else v
-            for k, v in a_dict.items()
-        }
-    )
-    _to_dict = lambda obj: {
-        k: Config._to_dict(v) if isinstance(v, Config) else v
-        for k, v in obj.__dict__.items()
-    }
-
-    _yaml_load = lambda loader, node, cls: Config._to_obj(
-        loader.construct_mapping(node, deep=True)
-    )
-    _yaml_save = lambda dumper, data, tag: dumper.represent_mapping(
-        tag, Config._to_dict(data)
-    )
 
 
 class Loader:

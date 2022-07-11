@@ -7,6 +7,7 @@ from functools import partial
 from types import SimpleNamespace
 
 from tools import day_hour, number, plural
+from tools.config import Config
 from tools.loader import Loader, YamlMapping
 from tools.style import Style
 
@@ -123,6 +124,20 @@ class InfosHandler:
     @property
     def bonus(self):
         return self.infos.bonus
+
+    def set_config_bonus(self, bonus_rules):
+        values = [int(v) for v in re.findall(r"(\d+)", bonus_rules)]
+        _iter = iter(values[3:])
+        config_bonus = Config(
+            added_per_day=values[1],
+            max=values[2],
+            consecutive_days=[[days, bonus] for days, bonus in zip(_iter, _iter)],
+        )
+        if self.config.bonus != config_bonus:
+            self.config.bonus = config_bonus
+            self.config.save()
+            return True
+        return False
 
     def get(self):
         infos = self.infos
