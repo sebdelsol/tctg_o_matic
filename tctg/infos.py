@@ -125,7 +125,7 @@ class InfosHandler:
     def bonus(self):
         return self.infos.bonus
 
-    def set_config_bonus(self, bonus_rules):
+    def check_config_bonus(self, bonus_rules):
         values = [int(v) for v in re.findall(r"(\d+)", bonus_rules)]
         _iter = iter(values[3:])
         config_bonus = Config(

@@ -91,19 +91,18 @@ class TCTG:
         self.event(Events.enable_update, False)
         self.event(Events.updating, h1("en cours").italic.white)
 
+        infos = self.infos
+        rwrd = self.config.reward.pts
+        x_reward = f'//td[@class="rowfollow"]/text()[.="{rwrd:,}"]/following::input[1]'
+        x_reward_done = '//*[contains(text(), "Toutes nos félicitations!")]'
+        x_infos = '(//span[@class="medium"])[1]', '(//td[@class="text"])[2]'
+        x_infos_block = '//table[@id="info_block"]'
+        x_rules = '//td[@class="embedded"]/ul'
+
         with Chrome(**self.chrome_kw) as driver:
             driver.load_cookies(self.url)
 
-            reward = self.config.reward.pts
-            x_reward = (
-                f'//td[@class="rowfollow"]/text()[.="{reward:,}"]/following::input[1]'
-            )
-            x_reward_done = '//*[contains(text(), "Toutes nos félicitations!")]'
-            x_infos = '(//span[@class="medium"])[1]', '(//td[@class="text"])[2]'
-            x_infos_block = '//table[@id="info_block"]'
-            x_rules = '//td[@class="embedded"]/ul'
-
-            with self.infos.updater(datetime.now()) as infos_updater:
+            with infos.updater(datetime.now()) as infos_updater:
 
                 def goto_page(page):
                     return driver.get(f"{self.url}/{page}")
@@ -117,14 +116,14 @@ class TCTG:
                 if update_infos():
                     self.log(h0("Bonus du jour obtenu !!").green)
                     bonus_rules = driver.xpath(x_rules).text
-                    if self.infos.set_config_bonus(bonus_rules):
-                        self.log(h0("MàJ des config Bonus !!").underline.red)
+                    if infos.check_config_bonus(bonus_rules):
+                        self.log(h0("MàJ des règles Bonus !!").underline.red)
                     update_infos()
                 else:
                     self.log(Style("Bonus déjà obtenu aujourd'hui").green)
 
                 # reward ?
-                if self.infos.bonus >= reward:
+                if infos.bonus >= rwrd:
                     self.log(h0("Cadeau obtenu !!").underline.green)
                     goto_page("mybonus.php")
                     driver.wait_for_clickable(x_reward).click()
