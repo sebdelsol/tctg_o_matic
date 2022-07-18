@@ -95,9 +95,7 @@ class Duration:
         if self._at_hour:
             if min_ != max_:
                 txt += f" de {self._at_hour + min_:%Hh%M}"
-                txt += f" à {self._at_hour + max_:%Hh%M}"
-            else:
-                txt += f" à {self._at_hour:%Hh%M}"
+            txt += f" à {self._at_hour + max_:%Hh%M}"
         elif min_ != max_:
             txt += f" {'±' if min_ else '+'}{timedelta_loc(max_)}"
         return txt
