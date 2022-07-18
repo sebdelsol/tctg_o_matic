@@ -82,7 +82,7 @@ class Duration:
         return self
 
     @staticmethod
-    def _unit_if_only_one(txt):
+    def _unit_only(txt):
         if len(txt.split(",")) == 1:
             value, unit = txt.split()
             if int(value) == 1:
@@ -90,15 +90,16 @@ class Duration:
         return txt
 
     def __repr__(self):
-        min_, max_ = self._jitter_range
-        txt = f"Chaque {self._unit_if_only_one(timedelta_loc(self._duration))}"
-        if self._jitter and self._at_hour:
-            txt += f" de {self._at_hour+self._jitter*min_:%Hh%M}"
-            txt += f" à {self._at_hour+self._jitter*max_:%Hh%M}"
-        elif self._at_hour:
-            txt += f" à {self._at_hour:%Hh%M}"
-        elif self._jitter:
-            txt += f" {'+' if min_ == 0 else '±'}{timedelta_loc(self._jitter * max_)}"
+        txt = f"Chaque {self._unit_only(timedelta_loc(self._duration))}"
+        min_, max_ = (self._jitter * v for v in self._jitter_range)
+        if self._at_hour:
+            if min_ != max_:
+                txt += f" de {self._at_hour + min_:%Hh%M}"
+                txt += f" à {self._at_hour + max_:%Hh%M}"
+            else:
+                txt += f" à {self._at_hour:%Hh%M}"
+        elif min_ != max_:
+            txt += f" {'±' if min_ else '+'}{timedelta_loc(max_)}"
         return txt
 
 
