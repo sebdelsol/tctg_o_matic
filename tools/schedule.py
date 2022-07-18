@@ -90,12 +90,15 @@ class Duration:
         return txt
 
     def __repr__(self):
+        min_, max_ = self._jitter_range
         txt = f"Chaque {self._unit_if_only_one(timedelta_loc(self._duration))}"
-        if self._at_hour:
+        if self._jitter and self._at_hour:
+            txt += f" de {self._at_hour+self._jitter*min_:%Hh%M}"
+            txt += f" à {self._at_hour+self._jitter*max_:%Hh%M}"
+        elif self._at_hour:
             txt += f" à {self._at_hour:%Hh%M}"
-        if self._jitter >= timedelta():
-            min_, max_ = self._jitter_range
-            txt += f" ~ {'+' if min_ == 0 else '±'}{timedelta_loc(self._jitter * max_)}"
+        elif self._jitter:
+            txt += f" {'+' if min_ == 0 else '±'}{timedelta_loc(self._jitter * max_)}"
         return txt
 
 
@@ -115,7 +118,7 @@ class Schedule:
         self._everys = []
         self._job = job
         logs = {name: logs.get(name, lambda _: None) for name in Schedule.log_funcs}
-        self.log = SimpleNamespace(**logs)
+        self._log = SimpleNamespace(**logs)
 
     def start(self, right_now):
         self._resume_from_now(right_now=right_now)
@@ -137,7 +140,7 @@ class Schedule:
 
     def _tick(self):
         left = self._next_in.left()
-        self.log.left(max(0, left))
+        self._log.left(max(0, left))
         return left <= 0
 
     def _resume_from_now(self, next_in=None, right_now=False):
@@ -151,7 +154,7 @@ class Schedule:
             if right_now:
                 self.force_update()
             else:
-                self.log.next(self._next_in.date)
+                self._log.next(self._next_in.date)
                 self._force_update.clear()
         else:
             raise ValueError("Nothing has been scheduled")
@@ -162,6 +165,6 @@ class Schedule:
             if self._tick() or self._force_update.wait(1):
                 if self._running:  # faster exit
                     scheduled = not self._force_update.is_set()
-                    self.log.update(scheduled)
+                    self._log.update(scheduled)
                     next_in = self._job()
                     self._resume_from_now(next_in)
