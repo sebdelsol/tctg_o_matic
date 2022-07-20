@@ -30,6 +30,7 @@ class Infos(YamlMapping):
     bonus: float = 0
     dbonus: float = 0
     ratio: float = 0
+    n_messages: int = 0
     ul: tuple = field(default_factory=lambda: (0, ""))
     dl: tuple = field(default_factory=lambda: (0, ""))
     seeding: int = 0
@@ -50,7 +51,7 @@ class InfosHandler:
     def save(self):
         self.loader.save(self.infos)
 
-    def _update(self, infos_txt, msg, update_date):
+    def _update(self, infos_txt, mailbox_txt, attendance_txt, update_date):
         infos = self.infos
 
         raw = re.sub(r"\[[\w\s]+\]|Torrents", "", infos_txt)
@@ -62,8 +63,10 @@ class InfosHandler:
         ul = raw.envoyé.split()
         dl = raw.téléchargé.split()
 
-        if "jour" in msg:
-            click_days, consecutive_days = re.findall(r"(\d+)", msg)[:2]
+        infos.n_messages = int(re.findall(r"\d+", mailbox_txt.split("\n")[1])[0])
+
+        if "jour" in attendance_txt:
+            click_days, consecutive_days = re.findall(r"(\d+)", attendance_txt)[:2]
             infos.bonus_date = update_date
         else:
             click_days = infos.click_days or 0
@@ -147,9 +150,13 @@ class InfosHandler:
             *row(h0(config.title).blue),
             *row(h3(day).blue, h4(" à ").blue, h2(hour).blue),
             *row(
-                h3(f"{'' if infos.connected else 'Pas '}Connecté").warn(
+                h2(f"{'' if infos.connected else 'Pas '}Connecté").warn(
                     not infos.connected
-                )
+                ),
+            ),
+            *row(
+                h1("✉").blue,
+                h1(f" {infos.n_messages}").warn(infos.n_messages >= 1),
             ),
             interline,
             *row(h1("Bonus ").blue, *number(h1(infos.bonus).green)),

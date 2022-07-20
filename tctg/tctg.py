@@ -95,7 +95,11 @@ class TCTG:
         rwrd = self.config.reward.pts
         x_reward = f'//td[@class="rowfollow"]/text()[.="{rwrd:,}"]/following::input[1]'
         x_reward_done = '//*[contains(text(), "Toutes nos félicitations!")]'
-        x_infos = '(//span[@class="medium"])[1]', '(//td[@class="text"])[2]'
+        x_infos = (
+            '(//span[@class="medium"])[1]',  # infos_txt
+            "//a[@href='messages.php']/..",  # mailbox_txt
+            '(//td[@class="text"])[2]',  # attendance_txt
+        )
         x_infos_block = '//table[@id="info_block"]'
         x_rules = '//td[@class="embedded"]/ul'
 
