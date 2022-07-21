@@ -93,19 +93,18 @@ class TCTG:
 
         infos = self.infos
         rwrd = self.config.reward.pts
-        x_reward = f'//td[@class="rowfollow"]/text()[.="{rwrd:,}"]/following::input[1]'
-        x_reward_done = '//*[contains(text(), "Toutes nos félicitations!")]'
+        x_reward = f"//td[@class='rowfollow']/text()[.='{rwrd:,}']/following::input[1]"
+        x_reward_done = "//*[contains(text(), 'Toutes nos félicitations!')]"
         x_infos = (
-            '(//span[@class="medium"])[1]',  # infos_txt
+            "(//span[@class='medium'])[1]",  # infos_txt
             "//a[@href='messages.php']/..",  # mailbox_txt
-            '(//td[@class="text"])[2]',  # attendance_txt
+            "(//td[@class='text'])[2]",  # attendance_txt
         )
-        x_infos_block = '//table[@id="info_block"]'
-        x_rules = '//td[@class="embedded"]/ul'
+        x_infos_block = "//table[@id='info_block']"
+        x_rules = "//td[@class='embedded']/ul"
 
         with Chrome(**self.chrome_kw) as driver:
             driver.load_cookies(self.url)
-
             with infos.updater(datetime.now()) as infos_updater:
 
                 def goto_page(page):
